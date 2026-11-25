@@ -2563,8 +2563,9 @@ summary { cursor: pointer; }
       const record = JSON.parse(serialized);
       if (!Number.isSafeInteger(record.seq) || record.seq < 1 || typeof record.payload !== 'string' ||
         record.hash !== hash(record.seq + '|' + record.payload)) return null;
-      const data = cleanState(JSON.parse(record.payload));
-      return data ? { ...record, data } : null;
+      const payload = JSON.parse(record.payload);
+      const data = cleanState(payload);
+      return data ? { ...record, data, expedition: payload.expedition ?? null } : null;
     } catch {
       return null;
     }
@@ -2594,13 +2595,13 @@ summary { cursor: pointer; }
       }
     }
 
-    write(data, expected, critical = false, replace = false) {
+    write(data, expected, critical = false, replace = false, expedition = null) {
       const current = this.read().record;
       if (!replace && (current?.hash !== expected?.hash || current?.seq !== expected?.seq)) {
         throw new SaveError('別のタブでセーブが更新されました。このタブを再読み込みしてください。', 'conflict');
       }
       const seq = (current?.seq ?? 0) + 1;
-      const payload = JSON.stringify(data);
+      const payload = JSON.stringify(expedition ? { ...data, expedition } : data);
       const record = { seq, payload, hash: hash(seq + '|' + payload) };
       const encoded = JSON.stringify(record);
       const keys = critical || replace ? SAVE_KEYS : SAVE_KEYS.slice(1);
@@ -2614,7 +2615,7 @@ summary { cursor: pointer; }
         }
       }
       if (!saved) throw new SaveError('セーブを書き込めません。空き容量とブラウザの保存設定を確認してください。', 'save');
-      return record;
+      return { ...record, expedition };
     }
   }
 
@@ -3322,6 +3323,47 @@ summary { cursor: pointer; }
     return { gold: Math.min(1e15, Math.floor(wins * 30 + wins ** 1.35 * 5)), bag };
   }
 
+  function snapshotExpedition(run, battle) {
+    const { dungeon, floor, team, travel, fights, purificationSteps, finalePhase } = run;
+    const { seen, opened, masterRolls, ...terrain } = floor;
+    const snapshot = {
+      version: 1, dungeonId: dungeon.id,
+      gate: dungeon.collectionGates?.findIndex(gate => gate.forms === dungeon.forms),
+      floor: { ...terrain, seen: [...seen], opened: [...opened], masterRolls: masterRolls && [...masterRolls] },
+      team: team.map(unit => ({ ...unit, perks: [...unit.perks] })),
+      travel, fights, purificationSteps, finalePhase,
+    };
+    if (battle) {
+      const { allies, enemies, newDiscoveries, ...record } = battle;
+      snapshot.battle = { ...record, enemies: enemies.map(unit => ({ ...unit, perks: [...unit.perks] })),
+        newDiscoveries: [...newDiscoveries] };
+    }
+    return clone(snapshot);
+  }
+
+  function restoreExpedition(snapshot, state) {
+    if (snapshot?.version !== 1) return {};
+    const { dungeonId, gate, floor, team, travel, fights, purificationSteps, finalePhase, battle } = clone(snapshot);
+    const dungeon = DUNGEONS[dungeonId];
+    if (!dungeon || (dungeon.dexRequirement && !dungeon.collectionGates) || !floor?.cells?.[floor.pos] ||
+      !Number.isInteger(floor.number) || floor.number < 1 || floor.number > dungeon.floors ||
+      !Array.isArray(team) || !Array.isArray(travel)) return {};
+    const entrance = dungeon.collectionGates?.[gate];
+    if (dungeon.collectionGates && floor.number > 1 && !entrance) return {};
+    const restoreUnit = unit => ({ ...unit, perks: new Set(unit.perks) });
+    const members = team.filter(unit => state.party.includes(unit.uid) &&
+      state.roster.some(mon => mon.uid === unit.uid && mon.species === unit.species)).map(restoreUnit);
+    if (!alive(members).length) return {};
+    const run = {
+      kind: 'dungeon', dungeon: entrance ? { ...dungeon, ...entrance } : dungeon,
+      floor: { ...floor, seen: new Set(floor.seen), opened: new Set(floor.opened),
+        masterRolls: floor.masterRolls && new Set(floor.masterRolls) },
+      team: members, travel, fights, purificationSteps, finalePhase, ended: false, penalized: false,
+    };
+    return { run, battle: battle ? { ...battle, allies: members, enemies: battle.enemies.map(restoreUnit),
+      newDiscoveries: new Set(battle.newDiscoveries) } : null };
+  }
+
   class Game {
     constructor(vault, random = Math.random) {
       this.vault = vault;
@@ -3332,9 +3374,10 @@ summary { cursor: pointer; }
       this.base = this.state ? clone(this.state) : null;
       this.recovered = saved.recovered;
       this.corrupt = saved.corrupt;
-      this.run = null;
-      this.battle = null;
-      this.notice = '';
+      const resumed = restoreExpedition(this.record?.expedition, this.state);
+      this.run = resumed.run ?? null;
+      this.battle = resumed.battle ?? null;
+      this.notice = this.run ? battlefieldName(this.run.dungeon, this.run.floor.number) + 'から探索を再開した。' : '';
     }
 
     begin(mode, starter) {
@@ -3363,7 +3406,7 @@ summary { cursor: pointer; }
 
     commit(message, critical = false) {
       if (message) this.state.last = message;
-      this.record = this.vault.write(this.state, this.record, critical);
+      this.record = this.vault.write(this.state, this.record, critical || Boolean(this.record?.expedition));
       this.base = clone(this.state);
       if (message) this.notice = message;
       return true;
@@ -3372,8 +3415,20 @@ summary { cursor: pointer; }
     patchBase(mutate) {
       const checkpoint = clone(this.base);
       mutate(checkpoint);
-      this.record = this.vault.write(checkpoint, this.record, true);
+      this.record = this.vault.write(checkpoint, this.record, true, false, this.record.expedition);
       this.base = checkpoint;
+    }
+
+    saveExpedition() {
+      if (this.run?.kind !== 'dungeon' || this.run.ended || this.inTraining()) return false;
+      const snapshot = snapshotExpedition(this.run, this.battle);
+      this.record = this.vault.write(this.state, this.record, true, false, snapshot);
+      this.base = clone(this.state);
+      return true;
+    }
+
+    saveIronBattle() {
+      if (this.state.mode === 'iron' && this.battle) this.saveExpedition();
     }
 
     get party() {
@@ -3602,6 +3657,7 @@ summary { cursor: pointer; }
           if (this.battle) {
             this.battle.itemTurn = this.battle.turn;
             logEvent(this.battle, message, 'good');
+            this.saveIronBattle();
           } else {
             this.addTravelLog(message);
           }
@@ -3887,6 +3943,7 @@ summary { cursor: pointer; }
 
     leaveCollectionHall() {
       if (!this.run?.floor?.collectionHall || this.battle || this.run.ended) return false;
+      this.commit();
       this.run = null;
       return true;
     }
@@ -3926,15 +3983,15 @@ summary { cursor: pointer; }
       this.run.floor = generateFloor(this.run.dungeon, number, this.random);
       const { event } = this.run.floor;
       this.addTravelLog(battlefieldName(this.run.dungeon, number) + (event && this.state.bag.lantern ? '・' + EVENTS[event].name : 'へ進んだ。'));
-      if (this.run.floor.collectionHall) return;
       if (this.run.floor.sanctum) {
         this.addTravelLog(this.run.dungeon.finalDeep ?
           FINAL_DEEP_FLOORS[number - 1].title + '。奥に★級の気配がある。' : '星脈の流れが止まる広間。最奥に祭壇がある。');
-        return;
+      } else if (!this.run.floor.collectionHall) {
+        this.collectGround();
+        if (event === 'lord') this.notice = ['静まり返ったフロアに、強大な気配がする……', this.notice].filter(Boolean).join('　');
+        this.rollMaster();
       }
-      this.collectGround();
-      if (event === 'lord') this.notice = ['静まり返ったフロアに、強大な気配がする……', this.notice].filter(Boolean).join('　');
-      this.rollMaster();
+      this.saveExpedition();
     }
 
     addTravelLog(message) {
@@ -4268,6 +4325,7 @@ summary { cursor: pointer; }
         .filter(id => !this.state.observed.includes(id)));
       for (const enemy of battle.enemies) this.observe(enemy.species);
       logEvent(battle, battle.enemies.map(enemy => enemy.name).join('、') + 'が現れた。', 'note');
+      this.saveIronBattle();
     }
 
     startArena(rank) {
@@ -4377,6 +4435,7 @@ summary { cursor: pointer; }
       this.battle.preferred = key;
       logEvent(this.battle, enemy.name + 'に' + ITEMS[item].name + 'を使った。勧誘 ' +
         formatScoutRate(this.scoutRate(enemy)) + '。', 'good');
+      this.saveIronBattle();
       return true;
     }
 
@@ -4419,6 +4478,7 @@ summary { cursor: pointer; }
       if (kind === 'blast') {
         blastEnemies(this.battle, value, unit => this.fainted(unit));
         if (this.battle.outcome === 'win') this.victorious();
+        this.saveIronBattle();
         return true;
       }
       if (kind === 'purify') {
@@ -4449,8 +4509,10 @@ summary { cursor: pointer; }
         if (kind !== 'heal') target.mp = Math.min(target.stats.mp, target.mp + Math.ceil(target.stats.mp * value) + (kind === 'mp' ? 4 : 0));
       }
       const message = (all ? '仲間全体' : targets[0].name) + 'に' + name + 'を使った。';
-      if (this.battle) logEvent(this.battle, message, 'good');
-      else this.addTravelLog(message);
+      if (this.battle) {
+        logEvent(this.battle, message, 'good');
+        this.saveIronBattle();
+      } else this.addTravelLog(message);
       return true;
     }
 
@@ -4473,6 +4535,7 @@ summary { cursor: pointer; }
         if (battle.kind === 'nest' || battle.kind === 'lord') run.floor.opened.delete(run.floor.pos);
         this.addTravelLog(message);
         if (this.inTraining()) this.finishTrainingFight();
+        this.saveIronBattle();
       } else {
         if (run.kind === 'streak') this.settleStreak();
         this.finish(run.kind === 'streak' ? '勝ち抜き ' + run.wins + '連勝で棄権した。' : '格闘場の試合を棄権した。');
@@ -4486,6 +4549,7 @@ summary { cursor: pointer; }
       if (this.battle.outcome === 'lose') this.defeated();
       else if (this.battle.outcome === 'win') this.victorious();
       else if (this.battle.outcome === 'enemy-fled') this.finishTrainingFight();
+      this.saveIronBattle();
       return true;
     }
 
@@ -4516,12 +4580,16 @@ summary { cursor: pointer; }
       };
       const before = this.state.gold;
       changes(this.state);
-      this.patchBase(changes);
       if (knockout) logEvent(this.battle, '人生縛り：' + unit.name + 'を永久に失った。', 'danger');
       if (wipe) {
         this.run.penalized = true;
         this.run.penalty = before - this.state.gold;
       }
+      if (this.run.kind === 'dungeon' && !this.inTraining()) {
+        // Clear the in-dungeon checkpoint as soon as a defeat is irreversible.
+        if (wipe) this.commit(undefined, true);
+        else this.saveExpedition();
+      } else this.patchBase(changes);
     }
 
     applyXP() {
@@ -4741,6 +4809,7 @@ summary { cursor: pointer; }
         const nextFloor = run.dungeon.finalDeep && this.battle.outcome === 'win' && !run.floor.final;
         this.battle = null;
         if (nextFloor) this.enterFloor(run.floor.number + 1);
+        else if (this.state.mode === 'iron') this.saveExpedition();
       } else {
         run.wave++;
         if (run.kind === 'arena') this.arenaWave();
@@ -18781,7 +18850,7 @@ Seimyaku.recipePortraits = {
     else if (game.run) work = travel(game, view);
     else work = `<div class="shell">${nav(game, view.page)}<main id="main-content" class="content">${game.recovered ?
       '<p class="callout">予備のセーブから冒険を復元しました。</p>' : ''}${renderers[view.page](game, view)}
-      <footer class="base-footer"><span>✦ 星脈の継ぎ手</span><span>拠点で自動保存</span></footer></main></div>`;
+      <footer class="base-footer"><span>✦ 星脈の継ぎ手</span><span>拠点・階移動時に自動保存</span></footer></main></div>`;
     return topbar(game, view) + work;
   }
 
@@ -19483,7 +19552,7 @@ Seimyaku.recipePortraits = {
       <label class="music-volume"><span>音楽の音量 <output id="music-volume-value">${state.musicVolume}%</output></span>
         <input type="range" min="0" max="100" step="5" value="${state.musicVolume}" data-change="musicVolume" aria-label="BGMの音量"></label>
       <div class="setting-row"><div><b>効果音</b><small>操作・発見・宝箱・戦闘の音</small></div><div class="sound-controls">${btn('test-sound', '試聴', '', 'soft', !state.sound)}${btn('sound', state.sound ? 'オン' : 'オフ', `aria-pressed="${state.sound}"`, 'soft')}</div></div>
-      <div class="setting-row"><div><b>セーブ</b><small>最後の拠点セーブから再開</small></div>${btn('ask-reset', '最初から', '', 'danger-btn')}</div>
+      <div class="setting-row"><div><b>セーブ</b><small>拠点・ダンジョンの階移動時に自動保存</small></div>${btn('ask-reset', '最初から', '', 'danger-btn')}</div>
       ${state.losses.length ? `<details><summary>星脈に還った仲間</summary>${[...state.losses].reverse().map(row => `<p>${esc(monsterName(row))} · ${esc(row.place)}</p>`).join('')}</details>` : ''}
     </div>`;
   }
@@ -20437,7 +20506,10 @@ Seimyaku.recipePortraits = {
   window.addEventListener('pagehide', () => { void music.suspend().catch(() => {}); });
   window.addEventListener('pageshow', () => { if (music.unlocked) music.unlock(); });
 
+  if (game.battle) syncBattle(null);
+  else if (game.run?.floor?.master?.pending) open('master');
   render();
+  showNotice(game.notice);
 })();
 </script>
 </body>

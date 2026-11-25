@@ -251,6 +251,8 @@ input::placeholder { color: #a1b4b7; }
 .tile.seen { background: #386153; border-color: #57927b; color: #c5e1c7; }
 .tile.player { position: relative; background: #c7e9b8; border-color: #e8f9d0; color: #24483b; box-shadow: 0 0 13px #b3eb9b88, inset 0 0 0 2px #84a480; font-size: 1.36rem; }
 .tile.player[data-feature]::after { content: attr(data-feature); position: absolute; right: 1px; bottom: 1px; padding: 0 2px; border-radius: 2px; background: #20362e; color: #f5e1a4; font-size: .65rem; line-height: 1.1; }
+.tile.is-gate:not(.player), .tile.is-gate.player[data-feature]::after, .map-legend .gate-mark { color: #ff786e; }
+.tile.is-gate:not(.player) { border-color: #ac6664; }
 .tile.is-chest:not(.player), .tile.is-boss:not(.player) { background: #493d30; border-color: #81704d; color: #fbe0a4; }
 .tile.is-chest.is-opened:not(.player) { background: #35433e; border-color: #708678; color: #a8c1ad; }
 .tile.is-stairs:not(.player), .tile.is-spring:not(.player) { background: #2f4355; border-color: #59788a; color: #b9e0f1; }
@@ -1098,6 +1100,8 @@ summary { cursor: pointer; }
     meat: { name: '香草肉', icon: '◆', kind: 'meat', value: .17, cost: 200, desc: 'GランクSサイズならスカウト率＋17ポイント。高ランク・大型ほど効果が下がる。' },
     steak: { name: '熟成肉', icon: '◆', kind: 'meat', value: .33, cost: 600, unlock: 0, desc: 'GランクSサイズならスカウト率＋33ポイント。高ランク・大型ほど効果が下がる。' },
     prime: { name: '星蜜肉', icon: '◆', kind: 'meat', value: .54, cost: 1500, unlock: 3, desc: 'GランクSサイズならスカウト率＋54ポイント。高ランク・大型ほど効果が下がる。' },
+    royalMeat: { name: '星皇肉', icon: '◆', kind: 'meat', value: 1.08, cost: 5000, unlock: RANKS.indexOf('B'), townOnly: true, desc: 'スカウト率への効果は星蜜肉の2倍。勧誘率の上限は80%。' },
+    revivalStone: { name: '蘇星石', icon: '✦', kind: 'revive', cost: 10000, townOnly: true, desc: '探索中、戦闘不能の仲間1体をHP1で復活させる。人生縛りでは使用不可。' },
     salve: { name: '野草薬', icon: '✚', kind: 'heal', value: .37, cost: 50, desc: '仲間1体のHPを最大値の37%と8回復。' },
     tonic: { name: '星灯露', icon: '✧', kind: 'mp', value: .44, cost: 200, desc: '仲間1体のMPを最大値の44%と4回復。' },
     elixir: { name: '澄晶薬', icon: '✚', kind: 'mix', value: .72, cost: 600, unlock: 1, desc: '仲間1体のHPとMPをそれぞれ最大値の72%回復。' },
@@ -1179,6 +1183,8 @@ summary { cursor: pointer; }
     worldRootStaff: { name: '黎樹の星杖', tier: 7, cost: 12750, stats: { wis: 23, hp: 21 }, perk: 'res:leaf', effect: '葉属性の被ダメージ軽減' },
     thunderBow: { name: '天鳴の雷弓', tier: 7, cost: 13050, stats: { atk: 20, spd: 19 }, perk: 'res:volt', effect: '雷属性の被ダメージ軽減' },
     voidGreatsword: { name: '空蝕の大剣', tier: 7, cost: 13200, stats: { atk: 25, def: 10 }, perk: 'res:shade', effect: '影属性の被ダメージ軽減' },
+    stardustGreatsword: { name: '星屑の大剣', tier: 7, rewardOnly: true, recovery: .02,
+      stats: { atk: 30, def: 25, wis: 20, spd: -5 }, effect: 'ターン終了時に最大HP・MPの2%を回復' },
     guardianBlade: { name: '守り人の剣', tier: 7, rewardOnly: true,
       stats: { atk: 30, def: 25, spd: 10 }, perk: 'statusRes', effect: '状態異常にかかる確率を軽減' },
     starlitScepter: { name: '星祓いの王笏', tier: 7, cost: 13500, stats: { wis: 21, mp: 18 }, perk: 'statusRes', effect: '状態異常にかかる確率を軽減' },
@@ -1795,7 +1801,6 @@ summary { cursor: pointer; }
     traits: ['ai2', 'conduct', 'giant'], skills: ['shade', 'dawn'],
     resistance: 'shade', statusRes: false, tactic: 'assault', scout: false, boss: true, specialOnly: true,
   });
-  for (const { dexRequirement, id } of secretDungeons) DEX_REWARDS[dexRequirement].dungeon = id;
 
   const extraDexRoutes = [
     [350, 16, '月影の霊廊', '狐獣と流霊が住む、月光の抜け道。', 'night', 'shade', ['fox', 'ghost'], 477],
@@ -1805,6 +1810,7 @@ summary { cursor: pointer; }
   const seedSet = count => Object.fromEntries(SEED_IDS.map(id => [id, count]));
   DEX_REWARDS[250] = { items: { ...seedSet(3), kinOrb: 2 } };
   DEX_REWARDS[400] = { items: seedSet(10), weapons: { guardianBlade: 1 } };
+  DEX_REWARDS[650] = { items: { transcendentElixir: 3 }, weapons: { stardustGreatsword: 1 } };
   DEX_REWARDS[550] = { items: { transcendentElixir: 1 } };
   const rewardMonsters = [
     [350, 783, '光尾皇コハクリア', 'dawn', '白金の尾で道を照らす狐獣。'],
@@ -1850,11 +1856,37 @@ summary { cursor: pointer; }
 
   for (const opponent of TRUE_TRAINING_OPPONENTS) addTrainingSpecies(opponent);
 
-  // Append after all existing routes to preserve saves that store dungeon IDs.
+  // Keep the retired observatory paths in their original ID slots for old saves.
   for (const [step, balanceId, name, desc, theme, element, forms, boss] of extraDexRoutes) {
     const id = DUNGEONS.length;
     DUNGEONS.push({ ...DUNGEONS[balanceId], id, balanceId, name, desc, theme, element, forms, boss, dexRequirement: step });
-    DEX_REWARDS[step].dungeon = id;
+  }
+
+  const collectionGates = [
+    ...DUNGEONS.filter(dungeon => dungeon.dexRequirement).map(({ forms, theme, element }) => ({ forms, theme, element })),
+    { forms: ['ram', 'crab'], theme: 'quartz', element: 'volt' },
+  ].map(gate => ({
+    ...gate, label: gate.forms.map(form => SPECIES.find(def => def?.form === form).family).join(' × '),
+  }));
+  // Threshold, rank range, difficulty reference, total floors, guardian HP.
+  for (const [dexRequirement, minRank, maxRank, balanceId, floors, guardianHp] of [
+    [100, 'G', 'E', 4, 8, 210],
+    [200, 'F', 'D', 7, 10, 420],
+    [300, 'E', 'C', 11, 12, 800],
+    [400, 'D', 'B', 13, 14, 1400],
+    [500, 'C', 'A', 15, 16, 2400],
+    [600, 'C', 'SS', 23, 22, 7000],
+  ]) {
+    const range = minRank + '〜' + maxRank;
+    const { level, levelSpan, unlock } = DUNGEONS[balanceId];
+    DUNGEONS.push({
+      id: DUNGEONS.length, dexRequirement, balanceId, floors, level, levelSpan, guardianHp,
+      name: '観測の星路（' + dexRequirement + '種）',
+      desc: range + 'ランク。B1の九つの入口から、探したい種族の組を選ぶ。',
+      theme: 'quartz', element: 'dawn', deep: dexRequirement === 600,
+      unlock, rareEncounters: [],
+      collectionGates, collectionRanks: [RANKS.indexOf(minRank), RANKS.indexOf(maxRank)],
+    });
   }
 
   function specialAttack(name, el, kind, power, mp, extra = {}) {
@@ -2436,6 +2468,9 @@ summary { cursor: pointer; }
       const count = int(data.bag?.[id], 0, 0, 9999);
       if (count) value.bag[id] = count;
     }
+    // Convert any unspent level-up elixirs claimed by the previous build.
+    const oldElixirs = int(data.bag?.growthElixir, 0, 0, 3);
+    if (oldElixirs) add(value.bag, 'transcendentElixir', oldElixirs);
     for (const id of ARENA_PERMITS.slice(0, value.arenaWins)) value.bag[id] = 1;
     const unassigned = {};
     for (const id of Object.keys(WEAPONS)) {
@@ -2635,8 +2670,11 @@ summary { cursor: pointer; }
     const drops = supplyDropTable(GROUND_DROPS, GROUND_SUPPLY_UPGRADES, dungeon.level);
     for (let i = 0; i < cells.length; i++) {
       if (cells[i] && random() < GROUND_DROP_RATE) {
-        ground[i] = dungeon.unlock >= RANKS.indexOf('C') && random() < .05
-          ? pick(SEED_IDS, random) : weighted(drops, drop => drop.weight, random).id;
+        const roll = dungeon.unlock >= RANKS.indexOf('C') || dungeon.deep ? random() : 1;
+        if (roll < .05) ground[i] = pick(SEED_IDS, random);
+        else if (dungeon.unlock >= RANKS.indexOf('B') && roll < .06) ground[i] = 'royalMeat';
+        else if (dungeon.deep && roll >= .06 && roll < .07) ground[i] = 'revivalStone';
+        else ground[i] = weighted(drops, drop => drop.weight, random).id;
       }
     }
     return ground;
@@ -2682,9 +2720,19 @@ summary { cursor: pointer; }
   function generateFloor(dungeon, number, random) {
     const balanceId = dungeon.balanceId ?? dungeon.id;
     const final = number === dungeon.floors;
+    if (dungeon.collectionGates && number === 1) {
+      const rows = ['.*.*.*.', '.......', '.*.*.*.', '...@...', '.*.*.*.'];
+      const layout = Array.from(rows.join(''));
+      const entry = layout.indexOf('@');
+      const gates = layout.flatMap((tile, index) => tile === '*' ? [index] : []);
+      return { number, collectionHall: true, width: rows[0].length, height: rows.length,
+        cells: layout.map(() => true), entry, pos: entry, gates,
+        objects: Object.fromEntries(gates.map(index => [index, 'gate'])), ground: {},
+        seen: new Set(layout.keys()), opened: new Set(), steps: 0, event: null };
+    }
     if (dungeon.finalDeep) return generateSanctum(number, final, number % 2 === 0);
     if (dungeon.finale && final) return generateSanctum(number);
-    const eventTypes = Object.keys(EVENTS).filter(id => id !== 'lord' || dungeon.unlock >= 1);
+    const eventTypes = Object.keys(EVENTS).filter(id => id !== 'lord' || (dungeon.unlock >= 1 && !dungeon.collectionGates));
     const eventRoll = final ? 1 : random();
     const nestChance = dungeon.deep ? .25 : .05;
     const otherEvents = eventTypes.filter(id => id !== 'nest');
@@ -2799,7 +2847,7 @@ summary { cursor: pointer; }
 (() => {
   'use strict';
 
-  const { SPECIES, ACTIONS, AILMENTS, ELEMENTS, battleStats, traitsOf, perksOf, enemyMonster, monsterName, alive, clamp } = Seimyaku;
+  const { SPECIES, ACTIONS, AILMENTS, ELEMENTS, WEAPONS, battleStats, traitsOf, perksOf, enemyMonster, monsterName, alive, clamp } = Seimyaku;
   const HELPFUL = new Set(['heal', 'shield', 'might', 'guard']);
   const HARMFUL_EFFECTS = Object.keys(AILMENTS);
   const HELPFUL_EFFECTS = ['shield', 'might', 'guard'];
@@ -2813,7 +2861,7 @@ summary { cursor: pointer; }
     const stats = battleStats(mon, scale);
     return {
       key, uid: mon.uid, name: monsterName(mon), species: mon.species, lv: mon.lv, traits: traitsOf(mon),
-      perks: perksOf(mon), tactic: mon.tactic, stats, hp: stats.hp, mp: stats.mp, effects: {},
+      perks: perksOf(mon), recovery: WEAPONS[mon.weapon]?.recovery, tactic: mon.tactic, stats, hp: stats.hp, mp: stats.mp, effects: {},
     };
   }
 
@@ -3138,6 +3186,11 @@ summary { cursor: pointer; }
         }
       }
     }
+    for (const unit of alive(battle.allies)) {
+      if (!unit.recovery) continue;
+      unit.hp = Math.min(unit.stats.hp, unit.hp + Math.ceil(unit.stats.hp * unit.recovery));
+      unit.mp = Math.min(unit.stats.mp, unit.mp + Math.ceil(unit.stats.mp * unit.recovery));
+    }
     if (!alive(battle.allies).length) battle.outcome = 'lose';
     else if (!alive(battle.enemies).length) battle.outcome = battle.enemies.every(unit => unit.fled) ? 'enemy-fled' : 'win';
     else battle.turn++;
@@ -3198,10 +3251,19 @@ summary { cursor: pointer; }
     def.scout && def.size === 1 && !STARTERS.includes(def.id));
 
   function floorLevel(dungeon, number) {
-    return dungeon.level + Math.floor((dungeon.levelSpan ?? 0) * (number - 1) / Math.max(1, dungeon.floors - 1));
+    const firstEncounterFloor = dungeon.collectionGates ? 2 : 1;
+    const depth = Math.max(0, number - firstEncounterFloor);
+    return dungeon.level + Math.floor((dungeon.levelSpan ?? 0) * depth / Math.max(1, dungeon.floors - firstEncounterFloor));
   }
 
   function wildProfile(dungeon, number, nest, base = floorLevel(dungeon, number)) {
+    if (dungeon.collectionGates) {
+      const [minimum, maximum] = dungeon.collectionRanks;
+      const progress = (number - 2) / Math.max(1, dungeon.floors - 2);
+      const favored = clamp(minimum + Math.round(progress * (maximum - minimum)) + Number(nest), minimum, maximum);
+      const weights = RANKS.map((_, i) => i < minimum || i > maximum ? 0 : Math.max(.4, 8 / 3 ** Math.abs(i - favored)));
+      return { weights, allows: def => Boolean(weights[def.rank] && def.scout && dungeon.forms?.includes(def.form)) };
+    }
     const balanceId = dungeon.balanceId ?? dungeon.id;
     const rank = clamp(Math.floor(balanceId / 4) + Number(nest), 0, ARENA.length - 1);
     const weights = RANKS.map((_, i) =>
@@ -3222,14 +3284,14 @@ summary { cursor: pointer; }
 
   function scoutHabitatMatches(species, dungeon, floor) {
     const habitat = LOCAL_SCOUTS[species];
-    return !habitat || (dungeon.id === habitat.dungeon && floor >= habitat.fromFloor);
+    return Boolean(dungeon.collectionGates) || !habitat || (dungeon.id === habitat.dungeon && floor >= habitat.fromFloor);
   }
 
   function scoutingFloors(dungeon, def, nest) {
     if (dungeon.finalDeep || !def.scout || !normalPools[def.rank].includes(def)) return [];
     const floors = [];
     const last = dungeon.floors - Number(Boolean(nest || dungeon.finale));
-    for (let number = 1; number <= last; number++) {
+    for (let number = dungeon.collectionGates ? 2 : 1; number <= last; number++) {
       if (scoutHabitatMatches(def.id, dungeon, number) && wildProfile(dungeon, number, nest).allows(def)) floors.push(number);
     }
     return floors;
@@ -3375,12 +3437,12 @@ summary { cursor: pointer; }
     }
 
     expeditionMember(uid) {
-      if (this.run?.kind !== 'dungeon' || this.run.ended || this.battle) return undefined;
+      if (this.run?.kind !== 'dungeon' || this.run.ended || this.run.floor.collectionHall || this.battle) return undefined;
       return this.run.team.find(unit => unit.uid === uid);
     }
 
     available(dungeon) {
-      if (dungeon.dexRequirement) return this.state.dexRewards.includes(dungeon.dexRequirement);
+      if (dungeon.dexRequirement) return Boolean(dungeon.collectionGates && this.state.owned.length >= dungeon.dexRequirement);
       if (dungeon.finale) return this.state.finaleBriefed;
       if (dungeon.finalDeep) return this.canEndgame() && DEEP_DUNGEONS.every(route => this.state.cleared.includes(route.id));
       return this.state.arenaWins > dungeon.unlock &&
@@ -3565,8 +3627,7 @@ summary { cursor: pointer; }
         const mon = reward.species ? this.recruit(reward.species, 1) : null;
         this.state.dexRewards.push(step);
         const message = mon ? SPECIES[mon.species].name + 'が預かり所に加わった！' : '図鑑の' + step + '種報酬を受け取った！';
-        const unlocked = reward.dungeon === undefined ? '' : ' 探索先に「' + DUNGEONS[reward.dungeon].name + '」が開いた。';
-        return this.commit(message + unlocked, true);
+        return this.commit(message, true);
       } catch (error) {
         this.state = before;
         throw error;
@@ -3659,6 +3720,7 @@ summary { cursor: pointer; }
     sells(item, merchant = false) {
       const def = ITEMS[item];
       return Boolean(def?.cost && (!merchant || !def.townOnly) &&
+        (def.kind !== 'revive' || (this.state.mode !== 'iron' && this.state.cleared.includes(FINALE_DUNGEON.id))) &&
         (def.unlock === undefined || this.state.arenaWins > def.unlock));
     }
 
@@ -3787,11 +3849,14 @@ summary { cursor: pointer; }
 
     materialScouting(id) {
       const def = SPECIES[id];
-      return DUNGEONS.filter(dungeon => this.available(dungeon) ||
+      return DUNGEONS.filter(dungeon => dungeon.collectionGates || this.available(dungeon) ||
         (!dungeon.deep && !dungeon.finale && !dungeon.dexRequirement)).flatMap(dungeon => {
-        const wild = scoutingFloors(dungeon, def, false);
-        const nest = scoutingFloors(dungeon, def, true);
-        return wild.length || nest.length ? [{ dungeon, wild, nest }] : [];
+        const gate = dungeon.collectionGates?.find(entry => entry.forms.includes(def.form));
+        if (dungeon.collectionGates && !gate) return [];
+        const habitat = gate ? { ...dungeon, ...gate } : dungeon;
+        const wild = scoutingFloors(habitat, def, false);
+        const nest = scoutingFloors(habitat, def, true);
+        return wild.length || nest.length ? [{ dungeon, gate, wild, nest }] : [];
       });
     }
 
@@ -3802,6 +3867,27 @@ summary { cursor: pointer; }
       this.run = { kind: 'dungeon', dungeon, team: this.party.map(mon => unitFrom(mon, 'p' + mon.uid)),
         ended: false, penalized: false, travel: [], fights: 0, purificationSteps: 0 };
       this.enterFloor(1);
+      return true;
+    }
+
+    collectionGateAtPlayer() {
+      const floor = this.run?.floor;
+      if (!floor?.collectionHall) return undefined;
+      return this.run.dungeon.collectionGates[floor.gates.indexOf(floor.pos)];
+    }
+
+    enterCollectionGate() {
+      if (this.battle || this.run?.ended) return false;
+      const gate = this.collectionGateAtPlayer();
+      if (!gate) return false;
+      this.run.dungeon = { ...this.run.dungeon, ...gate };
+      this.enterFloor(2);
+      return true;
+    }
+
+    leaveCollectionHall() {
+      if (!this.run?.floor?.collectionHall || this.battle || this.run.ended) return false;
+      this.run = null;
       return true;
     }
 
@@ -3840,6 +3926,7 @@ summary { cursor: pointer; }
       this.run.floor = generateFloor(this.run.dungeon, number, this.random);
       const { event } = this.run.floor;
       this.addTravelLog(battlefieldName(this.run.dungeon, number) + (event && this.state.bag.lantern ? '・' + EVENTS[event].name : 'へ進んだ。'));
+      if (this.run.floor.collectionHall) return;
       if (this.run.floor.sanctum) {
         this.addTravelLog(this.run.dungeon.finalDeep ?
           FINAL_DEEP_FLOORS[number - 1].title + '。奥に★級の気配がある。' : '星脈の流れが止まる広間。最奥に祭壇がある。');
@@ -3863,7 +3950,7 @@ summary { cursor: pointer; }
 
     nextEncounterChance() {
       const { floor, purificationSteps } = this.run;
-      if (floor.sanctum) return 0;
+      if (floor.sanctum || floor.collectionHall) return 0;
       if (purificationSteps > 0) return .05;
       return floor.event === 'lord' ? 0 : encounterChance(floor.steps + 1);
     }
@@ -3888,7 +3975,7 @@ summary { cursor: pointer; }
 
     rollMaster() {
       const floor = this.run?.floor;
-      if (!floor || this.inTraining() || floor.sanctum || this.run.dungeon.unlock < 1 || floor.event === 'lord' || floor.master) return false;
+      if (!floor || this.inTraining() || this.run.dungeon.collectionGates || floor.sanctum || this.run.dungeon.unlock < 1 || floor.event === 'lord' || floor.master) return false;
       floor.masterRolls ??= new Set();
       if (floor.masterRolls.has(floor.pos)) return false;
       floor.masterRolls.add(floor.pos);
@@ -3949,6 +4036,7 @@ summary { cursor: pointer; }
       if (!this.canMove(direction)) return false;
       const floor = this.run.floor;
       floor.pos = stepIndex(floor.pos, direction, floor.width, floor.height);
+      if (floor.collectionHall) return true;
       const kind = floor.objects[floor.pos];
       floor.message = !floor.seen.has(floor.pos) && kind ? { type: 'discovery', kind } : null;
       floor.groundMessage = null;
@@ -3991,8 +4079,10 @@ summary { cursor: pointer; }
             this.openFinaleBattle(1);
             return true;
           }
+          const guardian = dungeon.collectionGates ?
+            pick(normalPools[dungeon.collectionRanks[1]].filter(def => def.scout && dungeon.forms.includes(def.form)), this.random).id : dungeon.boss;
           this.openBattle([{
-            species: dungeon.boss, lv: Math.min(99, this.levelOnFloor() + (balanceId < 2 ? 1 : 3)),
+            species: guardian, lv: Math.min(99, this.levelOnFloor() + (balanceId < 2 ? 1 : 3)),
             scale: balanceId === 0 ? .78 : balanceId === 1 ? .90 : balanceId < 4 ? 1.02 : 1.12 + balanceId * .009,
           }], dungeon.investigation ? SPECIES[dungeon.boss].name : '階層の守り手', 'boss');
           return true;
@@ -4036,7 +4126,9 @@ summary { cursor: pointer; }
       const mirrorChance = rich ? .005 : .0015;
       const kinOrbChance = rich ? .003 : .001;
       let item;
-      if (!this.state.bag.lantern && itemRoll < lanternChance) item = 'lantern';
+      if (dungeon.unlock >= RANKS.indexOf('B') && roll >= .50 && roll < .52) item = 'royalMeat';
+      else if (dungeon.deep && roll >= .52 && roll < .54) item = 'revivalStone';
+      else if (!this.state.bag.lantern && itemRoll < lanternChance) item = 'lantern';
       else if (dungeon.id >= 3 && itemRoll >= lanternChance && itemRoll < lanternChance + mirrorChance) item = 'mirror';
       else if (dungeon.unlock >= 3 && itemRoll >= lanternChance + mirrorChance &&
         itemRoll < lanternChance + mirrorChance + kinOrbChance) item = 'kinOrb';
@@ -4077,7 +4169,7 @@ summary { cursor: pointer; }
     }
 
     returnHome() {
-      if (this.run?.kind !== 'dungeon' || this.inTraining() || this.run.ended || this.battle || !this.state.bag.return) return false;
+      if (this.run?.kind !== 'dungeon' || this.inTraining() || this.run.ended || this.run.floor.collectionHall || this.battle || !this.state.bag.return) return false;
       add(this.state.bag, 'return', -1);
       this.commit('帰灯石を使い、灯台街へ帰った。');
       this.battle = this.run = null;
@@ -4132,7 +4224,7 @@ summary { cursor: pointer; }
         }
         return;
       }
-      if (floor.sanctum) return false;
+      if (floor.sanctum || floor.collectionHall) return false;
       const balanceId = dungeon.balanceId ?? dungeon.id;
       const base = this.levelOnFloor();
       const { weights, allows } = wildProfile(dungeon, floor.number, nest, base);
@@ -4289,16 +4381,18 @@ summary { cursor: pointer; }
     }
 
     itemInContext(item) {
-      if (this.run?.kind !== 'dungeon' || this.run.ended || this.battle?.outcome || !this.state.bag[item]) return false;
+      if (this.run?.kind !== 'dungeon' || this.run.ended || this.run.floor.collectionHall || this.battle?.outcome || !this.state.bag[item]) return false;
       const kind = ITEMS[item]?.kind;
       if (kind === 'guide' || kind === 'purify') return !this.battle && !this.inTraining();
       if (kind === 'blast') return Boolean(this.battle);
+      if (kind === 'revive') return this.state.mode !== 'iron' && this.run.team.some(unit => unit.hp === 0);
       return ['heal', 'mp', 'mix', 'cure', 'seed'].includes(kind);
     }
 
     itemTargets(item, key) {
       const { kind, all, effects } = ITEMS[item];
       if (kind === 'seed') return this.run.team.filter(unit => unit.key === key && this.canUseGrowthItem(item, unit.uid));
+      if (kind === 'revive') return this.run.team.filter(unit => unit.key === key && unit.hp === 0);
       return alive(this.run.team).filter(unit => {
         if (!all && unit.key !== key) return false;
         if (kind === 'cure') return effects.some(effect => unit.effects[effect]);
@@ -4342,6 +4436,11 @@ summary { cursor: pointer; }
       }
       const targets = this.itemTargets(item, key);
       for (const target of targets) {
+        if (kind === 'revive') {
+          target.hp = 1;
+          target.effects = {};
+          continue;
+        }
         if (kind === 'cure') {
           for (const effect of effects) delete target.effects[effect];
           continue;
@@ -4539,7 +4638,7 @@ summary { cursor: pointer; }
         const first = !this.state.cleared.includes(dungeon.id);
         if (first) this.state.cleared.push(dungeon.id);
         run.reportToCastle = (dungeon === S_DUNGEON && !this.state.finaleBriefed) ||
-          (dungeon.finale && !this.canEndgame()) || (first && dungeon.deep);
+          (dungeon.finale && !this.canEndgame()) || (first && dungeon.deep && !dungeon.collectionGates);
         if (first && dungeon.investigation) {
           run.investigation = dungeon.investigation;
           if (DEEP_DUNGEONS.at(-1) === dungeon && this.available(FINAL_DEEP_DUNGEON)) {
@@ -4605,6 +4704,11 @@ summary { cursor: pointer; }
       }
       if (this.run.wins >= 50 && this.random() < Math.min(.025, .005 + (this.run.wins - 50) * .00015 + .003 * difficulty)) {
         rewards.bag.transcendentElixir = 1;
+      }
+      if (this.run.wins >= 40) {
+        const roll = this.random();
+        if (roll < .03) rewards.bag.royalMeat = 1;
+        else if (roll < .06) rewards.bag.revivalStone = 1;
       }
       this.payItems(rewards.bag);
     }
@@ -18147,7 +18251,9 @@ Seimyaku.recipePortraits = {
         ${navBtn('castle', '星灯城へ →', 'primary')}</section>`;
     const nextRank = state.arenaWins;
     const unexplored = DUNGEONS.filter(dungeon => game.available(dungeon) && !state.cleared.includes(dungeon.id));
-    const next = unexplored.find(dungeon => dungeon.deep) ?? unexplored[0] ?? DUNGEONS[0];
+    const next = unexplored.find(dungeon => dungeon.deep && !dungeon.collectionGates) ?? unexplored[0] ?? DUNGEONS[0];
+    const activePaths = DUNGEONS.filter(dungeon =>
+      (!dungeon.deep && !dungeon.dexRequirement && !dungeon.finale) || game.available(dungeon));
     return `<section class="hero home-hero">${back('beacon')}<div class="hero-copy"><h1>灯台街ルノ</h1><p>魔物を仲間にして、地下を流れる星脈をたどろう。</p>
       ${navBtn('dungeons', '探索先を選ぶ <span aria-hidden="true">→</span>', 'primary')}</div><div class="hero-place"><span aria-hidden="true">✦</span> 星脈の入口</div></section>
       ${!state.roster.length ? `<div class="callout"><b>灯台守からの申し出</b><p>新たな仲間と探索用の道具を受け取れます。</p>${btn('rescue', '仲間を迎える', '', 'primary')}</div>` : ''}
@@ -18155,10 +18261,10 @@ Seimyaku.recipePortraits = {
         <section class="panel hub-panel"><div class="section-head"><h2>探索隊</h2><span class="counter">${slotsUsed(party)} / 3 枠</span></div>
           ${party.length ? `<div class="hub-team">${party.map(miniMon).join('')}</div>` : none('探索に出る仲間を編成してください。')}
           ${navBtn('box', '仲間を編成する →', 'soft block')}</section>
-        <section class="panel hub-panel trail"><div class="section-head"><h2>開拓の歩み</h2><span class="counter">${state.cleared.length} / ${DUNGEONS.filter(dungeon => (!dungeon.deep && !dungeon.dexRequirement && !dungeon.finale) || game.available(dungeon)).length} 踏破</span></div>
+        <section class="panel hub-panel trail"><div class="section-head"><h2>開拓の歩み</h2><span class="counter">${activePaths.filter(dungeon => state.cleared.includes(dungeon.id)).length} / ${activePaths.length} 踏破</span></div>
           ${next.finale ? btn('finale-route', next.name + ' · 全34階 →', '', 'soft block') :
             routeLink('dungeons', '⌁', next.name, (state.cleared.includes(next.id) ? '再探索' : '未踏破') + ' · 全' + next.floors + '階', '',
-              next.deep ? 'deep' : next.dexRequirement ? 'secret' : 'front')}
+              next.dexRequirement ? 'secret' : next.deep ? 'deep' : 'front')}
           ${nextRank < 8 ? routeLink('arena', '⚑', '格闘場 ' + RANKS[nextRank] + 'ランク', '優勝で新たな星路を解放', 'amber') :
             game.canEndgame() ? routeLink('arena', '⚑', '無限勝ち抜きバトル', '最高 ' + fmt(state.best) + '連勝', 'amber') :
             game.readyForFinale() && (!state.finaleBriefed || game.finaleDefeated()) ? routeLink('castle', '♜', '星灯城への報告', '城主リーヴェが待っている', 'violet') : ''}
@@ -18310,14 +18416,15 @@ Seimyaku.recipePortraits = {
   function dungeonList(game, view) {
     const { state } = game;
     const secret = DUNGEONS.filter(dungeon => (dungeon.dexRequirement || dungeon.finale) && game.available(dungeon));
-    const deep = DUNGEONS.filter(dungeon => dungeon.deep && game.available(dungeon));
+    const deep = DUNGEONS.filter(dungeon => dungeon.deep && !dungeon.collectionGates && game.available(dungeon));
     const groups = [['front', '表ダンジョン', DUNGEONS.filter(dungeon => !dungeon.dexRequirement && !dungeon.deep && !dungeon.finale)]];
     if (deep.length) groups.push(['deep', '裏ダンジョン', deep]);
     if (secret.length) groups.push(['secret', '隠しダンジョン', secret]);
     const [route, , dungeons] = groups.find(([id]) => id === view.routes) ?? groups[0];
     const showCleared = view.dungeonFilter === 'all';
-    const visible = showCleared ? dungeons : dungeons.filter(dungeon => !state.cleared.includes(dungeon.id));
-    return header('星路の入口', route === 'deep' ? '裏ダンジョンを踏破して、逆流の手掛かりを追います。' : '最終階の守り手を倒すと、踏破して灯台街へ帰ります。') +
+    const visible = showCleared ? dungeons : dungeons.filter(dungeon => dungeon.collectionGates || !state.cleared.includes(dungeon.id));
+    return header('星路の入口', route === 'deep' ? '裏ダンジョンを踏破して、逆流の手掛かりを追います。' :
+      route === 'secret' ? '観測の星路では、入口で探したい魔物の種族を選べます。' : '最終階の守り手を倒すと、踏破して灯台街へ帰ります。') +
       `<div class="tabs" aria-label="探索先">${groups.map(([id, label, paths]) =>
         btn('routes', label + ' <small>' + paths.length + '</small>', `data-id="${id}" aria-pressed="${id === route}"`)).join('')}</div>
       <div class="display-options path-filters" role="group" aria-label="踏破状況で絞り込む">
@@ -18346,6 +18453,7 @@ Seimyaku.recipePortraits = {
     stairs: { icon: '⇣', label: '階段を下りる' }, boss: { icon: '⚑', label: '守り手に挑む' }, chest: { icon: '▣', label: '宝箱を開ける' },
     spring: { icon: '✚', label: '回生の泉を使う' }, peddler: { icon: '⌂', label: '旅商人と取引する' }, nest: { icon: '◎', label: '巣を調べる' },
     lord: { icon: '♜', label: 'フロアの主に挑む' },
+    gate: { icon: '●', label: '入口を調べる' },
   };
 
   const DISCOVERIES = {
@@ -18398,6 +18506,7 @@ Seimyaku.recipePortraits = {
 
   function travel(game, view) {
     const { run: { dungeon, floor, travel: history, team, fights }, state } = game;
+    const hall = floor.collectionHall;
     const training = game.inTraining();
     const trial = dungeon.finalDeep ? FINAL_DEEP_FLOORS[floor.number - 1] : null;
     const feature = floor.objects[floor.pos];
@@ -18428,7 +18537,7 @@ Seimyaku.recipePortraits = {
     const nextEncounter = game.nextEncounterChance();
     return `<main class="active-wrap travel">
       <div class="active-title"><div><p class="muted mini">${training ? '円の間 · ' + fights + ' / ' + dungeon.battles + '戦終了' :
-        (trial?.title ?? (floor.sanctum ? '星脈の祭壇' : dungeon.deep ? '裏ダンジョン' : '星路の探索')) + ' · B' + floor.number + ' / B' + dungeon.floors + (floor.shape === 'ring' ? ' · 円型' : floor.shape === 'room' ? ' · フロア型' : '')}</p><h1>${dungeon.name}</h1></div>
+        (hall ? '入口の広間' : trial?.title ?? dungeon.label ?? (floor.sanctum ? '星脈の祭壇' : dungeon.deep ? '裏ダンジョン' : '星路の探索')) + ' · B' + floor.number + ' / B' + dungeon.floors + (floor.shape === 'ring' ? ' · 円型' : floor.shape === 'room' ? ' · フロア型' : '')}</p><h1>${dungeon.name}</h1></div>
         <div class="encounter"><span>${nextEncounter ? '次の一歩の遭遇率' : 'このフロア'}</span><strong>${nextEncounter ? pct(nextEncounter) : '遭遇なし'}</strong>
           ${powder ? `<span>浄化の粉 · 残り${powder}歩</span>` : ''}</div></div>
       ${firstExploration(game.run, state) && floor.number === 1 && !fights && !view.dismissedTutorials.has('explore')
@@ -18452,7 +18561,7 @@ Seimyaku.recipePortraits = {
               }).join('')}
             </div></div>
           </div>
-          <div class="map-legend"><span><i class="legend-p">✦</i> 現在地</span>${training ? '<span>出口なし</span>' :
+          <div class="map-legend"><span><i class="legend-p">✦</i> 現在地</span>${hall ? '<span><i class="gate-mark">●</i> 種族ごとの入口</span>' : training ? '<span>出口なし</span>' :
             trial ? '<span><i>⚑</i> ★級の守り手</span>' : floor.sanctum ? '<span><i>⚑</i> 祭壇</span>' : `<span><i class="legend-s">■</i> 探索済み</span>
             ${guided.size ? '<span class="guide-legend"><i>■</i> 階段への道</span>' : ''}
             ${lit ? '<span class="lantern-lit">灯火のランタン点灯</span>' : ''}
@@ -18460,15 +18569,16 @@ Seimyaku.recipePortraits = {
           <div class="walk-controls"><div class="dpad" role="group" aria-label="移動">
             ${move('up', '↑', '上へ移動')}${move('left', '←', '左へ移動')}${move('down', '↓', '下へ移動')}${move('right', '→', '右へ移動')}</div>
             <div class="tile-action">${notices.length ? `<div class="tile-notices" role="status">${notices.map(text => `<p>${esc(text)}</p>`).join('')}</div>` : ''}
-              ${ready ? btn(feature === 'peddler' ? 'merchant' : feature === 'lord' ? 'ask-lord' : 'interact',
+              ${ready ? btn(feature === 'gate' ? 'ask-collection-gate' : feature === 'peddler' ? 'merchant' : feature === 'lord' ? 'ask-lord' : 'interact',
                 trial ? '★級の守り手に挑む' : floor.sanctum ? '祭壇を調べる' : OBJECTS[feature].label, '', 'primary') : !notices.length ?
-               '<span class="muted mini">' + (training ? '歩くと修練場の魔物に遭遇します。' :
+               '<span class="muted mini">' + (hall ? '赤いしるしのマスに立つと、行き先を確認できます。' : training ? '歩くと修練場の魔物に遭遇します。' :
                  lit ? 'しるしのあるマスで調べられます。' : '階段や宝箱は、そのマスに立つと見つかります。') + '</span>' : ''}</div></div>
         </section>
         <div class="travel-side">
-          <section class="panel travel-team"><div class="section-head"><h2>探索隊</h2><div class="travel-actions">${btn('items', '道具', '', 'soft')}${training ? '' : btn('ask-return', '⌁ 帰還 <small>×' + (state.bag.return || 0) + '</small>', 'aria-label="帰灯石で帰還"', 'soft', !state.bag.return)}</div></div>
+          <section class="panel travel-team"><div class="section-head"><h2>探索隊</h2><div class="travel-actions">${hall ? btn('collection-leave', '広間を出る', '', 'soft') :
+            btn('items', '道具', '', 'soft') + (training ? '' : btn('ask-return', '⌁ 帰還 <small>×' + (state.bag.return || 0) + '</small>', 'aria-label="帰灯石で帰還"', 'soft', !state.bag.return))}</div></div>
           ${team.map(unit => `<div class="travel-mon ${unit.hp ? '' : 'downed'}"><div class="portrait">${image(unit.species)}</div>
-          <div class="travel-info"><div>${game.monster(unit.uid) ?
+          <div class="travel-info"><div>${!hall && game.monster(unit.uid) ?
             btn('mon', `<b>${esc(unit.name)}</b>`, `data-id="${unit.uid}" aria-label="${esc(unit.name)}の詳細とSP配分"`, 'travel-mon-open') :
             `<b>${esc(unit.name)}</b>`}<small>Lv.${unit.lv}</small></div>${meter(unit.hp, unit.stats.hp, 'hp')}${meter(unit.mp, unit.stats.mp, 'mp')}</div></div>`).join('')}
           </section>
@@ -18744,14 +18854,14 @@ Seimyaku.recipePortraits = {
     return `<p>仲間にした種 ${fmt(game.state.owned.length)} / ${fmt(SPECIES.length - 1)}。達成した報酬を好きな順に受け取れます。</p>
       <div class="dex-reward-list">${Object.entries(DEX_REWARDS).map(([step, reward]) => {
         const def = reward.species ? SPECIES[reward.species] : null;
-        const route = DUNGEONS[reward.dungeon];
+        const route = DUNGEONS.find(dungeon => dungeon.collectionGates && dungeon.dexRequirement === Number(step));
         const status = game.dexRewardStatus(Number(step));
         return `<article class="dex-reward">
           <div><h3>${step} 種</h3>
-            ${def ? `<p><span class="portrait">${image(def.id)}</span> ${rankTag(def)} <strong>${def.name}</strong> <small>Lv.1・図鑑報酬限定</small></p>` : ''}
+            ${def ? (status === 'claimed' ? `<p><span class="portrait">${image(def.id)}</span> ${rankTag(def)} <strong>${def.name}</strong> <small>Lv.1・図鑑報酬限定</small></p>` : '<p><span class="portrait">？</span> <strong>？？？？</strong> <small>受け取り後に公開</small></p>') : ''}
             ${Object.entries(reward.items ?? {}).map(([item, amount]) => `<p>${ITEMS[item].name} ×${amount}</p>`).join('')}
             ${Object.entries(reward.weapons ?? {}).map(([id, amount]) => `<p>${WEAPONS[id].name} ×${amount}<br><small>${weaponStats(WEAPONS[id])} · ${WEAPONS[id].effect}</small></p>`).join('')}
-            ${route ? `<p>隠しダンジョン「${route.name}」解放 <small>${RANKS[route.unlock]}ランク相当</small></p>` : ''}
+            ${route ? `<p>${route.name} <small>${game.available(route) ? '探索から入場可能' : '到達時に解放'}</small></p>` : ''}
           </div>
           ${status === 'ready' ? btn('claim-dex-reward', '受け取る', `data-id="${step}" aria-label="${step}種の報酬を受け取る"`, 'primary')
             : `<span class="counter">${statuses[status]}</span>`}
@@ -19006,7 +19116,7 @@ Seimyaku.recipePortraits = {
   }
 
   const weaponStats = def => ['hp', 'mp', 'atk', 'def', 'spd', 'wis']
-    .flatMap((stat, i) => def.stats[stat] ? [STATS[i] + ' +' + def.stats[stat]] : []).join(' · ');
+    .flatMap((stat, i) => def.stats[stat] ? [STATS[i] + ' ' + (def.stats[stat] > 0 ? '+' : '') + def.stats[stat]] : []).join(' · ');
 
   function merchantWeaponRow(game) {
     const offer = game.run?.floor?.merchantOffer;
@@ -19168,7 +19278,7 @@ Seimyaku.recipePortraits = {
         ${recipes.length ? recipes.map(recipe => `<p>${material(recipe[0])} ＋ ${material(recipe[1])} ${workshop(recipe)}</p>`).join('') :
           '<p>' + (def.specialOnly || def.ordinaryBreeding === false ? '登録された配合レシピはありません。' : '通常配合で作れる候補です。「おすすめの配合」で子の名前を検索できます。') + '</p>'}</div></section>
       <section class="panel material-sources recipes"><h3>スカウト</h3>
-        ${routes.length ? `<ul>${routes.map(({ dungeon, wild, nest }) => `<li>${dungeon.name}${game.available(dungeon) ? '' : '（未解放）'}<br>
+        ${routes.length ? `<ul>${routes.map(({ dungeon, gate, wild, nest }) => `<li>${dungeon.name}${gate ? ' · ' + gate.label : ''}${game.available(dungeon) ? '' : '（未解放）'}<br>
           <span class="muted mini">${[wild.length && '野生 ' + floors(wild), nest.length && '魔物の巣 ' + floors(nest)].filter(Boolean).join(' ／ ')}</span></li>`).join('')}</ul>` :
           `<p>${def.scout ? '案内できる野生・巣の出現先はありません。' : 'スカウトできません。'}</p>`}</section>
       ${uses.length ? `<section class="panel material-sources recipes"><h3>この魔物を親にする特殊配合</h3><div class="recipe-list">
@@ -19497,6 +19607,16 @@ Seimyaku.recipePortraits = {
           <p>${rankTag(def)} ${SIZES[def.size]}サイズ · Lv.${Math.min(99, game.levelOnFloor() + 2)}</p>
           <p class="mini muted">主の間ではHPが通常の${def.size === 2 ? 3 : 5}倍。仲間になると通常に戻ります。</p>
           <p>部屋の中央で待ち構えている。戦いますか？</p></div></div><div class="dialog-actions">${btn('close', '戦わない')}${btn('lord-fight', '戦う', '', 'primary')}</div>`;
+        break;
+      }
+      case 'collection-gate': {
+        const gate = game.collectionGateAtPlayer();
+        if (!gate) return '';
+        const [minimum, maximum] = game.run.dungeon.collectionRanks;
+        title = 'この入口で進む？';
+        body = `<p><strong>${esc(gate.label)}</strong>の魔物が出る星路です。</p>
+          <p>${rankTag({ rank: minimum })} 〜 ${rankTag({ rank: maximum })}ランク</p>
+          ${actions('collection-gate', 'B2へ進む →')}`;
         break;
       }
       case 'return':
@@ -19844,11 +19964,34 @@ Seimyaku.recipePortraits = {
           resetScroll = game.startDungeon(number);
           if (resetScroll && game.run.floor.groundMessage?.quantity) cue = 'pickup';
           break;
+        case 'ask-collection-gate':
+          if (!view.modal && game.collectionGateAtPlayer()) open('collection-gate');
+          break;
+        case 'collection-gate':
+          if (view.modal?.type === 'collection-gate' && game.enterCollectionGate()) {
+            view.modal = null;
+            resetScroll = true;
+            if (game.run.floor.groundMessage?.quantity) cue = 'pickup';
+          }
+          break;
+        case 'collection-leave':
+          if (game.leaveCollectionHall()) {
+            view.modal = null;
+            view.page = 'dungeons';
+            view.routes = 'secret';
+            resetScroll = true;
+          }
+          break;
         case 'train-enter':
           if (TRAINING_ROOMS[view.page]) resetScroll = game.startTraining(TRAINING_ROOMS[view.page]);
           break;
         case 'move':
-          if (game.move(id)) {
+          if (!view.modal && game.move(id)) {
+            if (game.collectionGateAtPlayer()) {
+              open('collection-gate');
+              cue = 'found';
+              break;
+            }
             const discovery = game.run.floor.message;
             if (discovery?.type === 'discovery') {
               const text = { stairs: '階段を見つけた！', boss: '守り手を見つけた！', chest: '宝箱を見つけた！',
@@ -19879,7 +20022,7 @@ Seimyaku.recipePortraits = {
         case 'lord-fight': if (view.modal?.type === 'lord' && game.interact()) view.modal = null; break;
         case 'master-accept': if (view.modal?.type === 'master' && game.resolveMaster(true)) view.modal = null; break;
         case 'items':
-          if (game.run?.kind === 'dungeon' && !game.run.ended && !game.battle?.outcome && game.itemAvailableThisTurn()) open('items');
+          if (game.run?.kind === 'dungeon' && !game.run.ended && !game.run.floor.collectionHall && !game.battle?.outcome && game.itemAvailableThisTurn()) open('items');
           break;
         case 'item-select': if (view.modal?.type === 'items' && game.itemInContext(id)) view.modal.id = id; break;
         case 'item-list': if (view.modal?.type === 'items') view.modal.id = null; break;

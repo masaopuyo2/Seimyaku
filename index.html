@@ -1769,12 +1769,13 @@ summary { cursor: pointer; }
     { id: 782, template: 555, rank: STAR_RANK, name: '極星眼アストリア', element: 'dawn', resistance: 'shade',
       desc: '巡晶眼の星庭B46以降にまれに出現する。星脈の源で目覚めた極星の守り手。' },
   ];
-  function addHighRankSpecies({ template, parents, size, scout, specialOnly = false, ...entry }) {
+  function addHighRankSpecies({ template, parents, size, traits, scout, specialOnly = false, ...entry }) {
     const base = SPECIES[template];
     const rise = entry.rank - base.rank;
     SPECIES.push(Object.freeze({
       ...base, ...entry, variant: base.variant + 1, scout: scout ?? entry.rank !== STAR_RANK, boss: false, specialOnly, ordinaryBreeding: false,
-      size: size ?? base.size, traits: size === undefined ? base.traits : [...base.traits.slice(0, 2), ['','small','large','giant'][size]],
+      size: size ?? base.size,
+      traits: size === undefined ? (traits ?? base.traits) : [...(traits ?? base.traits).slice(0, 2), ['','small','large','giant'][size]],
       base: base.base.map((value, i) => value + rise * [9, 4, 4, 3, 3, 4][i]),
       skills: [entry.element, base.skills[1]],
     }));
@@ -1855,6 +1856,31 @@ summary { cursor: pointer; }
   }
 
   for (const opponent of TRUE_TRAINING_OPPONENTS) addTrainingSpecies(opponent);
+
+  const deepCrystalDragon = SPECIES.length;
+  const thunderCrownBird = deepCrystalDragon + 1;
+  const jadeRingRam = thunderCrownBird + 1;
+  const largeSummitFusions = [
+    { id: deepCrystalDragon, template: 781, parents: [781, 817],
+      name: '深晶竜ヴェルナード', element: 'tide', resistance: 'shade', tactic: 'support',
+      traits: ['shell', 'ward'],
+      desc: '深海の圧力で磨かれた結晶を背負う竜。盾のような翼を広げ、仲間をさらう影を打ち払う。' },
+    { id: thunderCrownBird, template: 811, parents: [811, 812],
+      name: '雷冠鳥ヴォルレイ', element: 'volt', resistance: 'stone', tactic: 'assault',
+      traits: ['ai2', 'lead'],
+      desc: '雷雲から急降下する狩り鳥。金色の冠羽に集めた雷を、敵の守りの一点に突き落とす。' },
+    { id: jadeRingRam, template: 813, parents: [813, 816],
+      name: '翠環羊ミノセレス', element: 'leaf', resistance: 'tide', tactic: 'support',
+      traits: ['ai12', 'calm'],
+      desc: '翡翠色の巻き角を持つ大羊。角の響きに合わせて草木が芽吹き、仲間の傷と疲れを癒やす。' },
+  ];
+  for (const entry of largeSummitFusions) {
+    addHighRankSpecies({ ...entry, rank: STAR_RANK, size: 2, scout: false, specialOnly: true });
+    const [a, b] = entry.parents;
+    RECIPES.push([a, b, entry.id]);
+    SPECIAL_RESULTS.add(entry.id);
+    RECIPE_BY_PAIR.set(pairKey(a, b), entry.id);
+  }
 
   // Keep the retired observatory paths in their original ID slots for old saves.
   for (const [step, balanceId, name, desc, theme, element, forms, boss] of extraDexRoutes) {
@@ -2025,6 +2051,9 @@ summary { cursor: pointer; }
     [skyfireDragon]: ['焔翼の急襲', physical('紅蓮の急降下', 'ember', 2.02, 16, { pierce: .42 })],
     [crownforgeDragon]: ['星冠の炉心', physical('星炉の灼息', 'ember', 1.57, 20, { all: true, pierce: .32 })],
     [FINAL_DEEP_BOSS.id]: ['終星の魔眼', magic('終星蝕', 'shade', 1.65, 26, { all: true, pierce: .22, effect: 'weak', rate: .42 })],
+    [deepCrystalDragon]: ['深晶の竜盾', shield('深晶の竜壁', 20, { cleanse: true })],
+    [thunderCrownBird]: ['雷冠の奥義', physical('雷冠落とし', 'volt', 2.24, 24, { pierce: .58 })],
+    [jadeRingRam]: ['翠環の恵み', heal('翠環の芽吹き', 1.13, 22, { rally: true })],
   };
 
   function giveSpecialSkill(id, native, previousSpecialSkill) {
@@ -8613,6 +8642,147 @@ Seimyaku.alternateForms = {
   ]);
   Seimyaku.uniqueSpritePainters = new Map();
   Seimyaku.lateRankSprites = {
+    854: { // 深晶竜ヴェルナード
+      palette: [null, '#1a1d43', '#e3ded6', '#5482a4', '#b0a39f', '#454968', '#c9e3e5', '#335380', '#757387', '#8a91a7', '#2c3b68', '#c0bdbe', '#81bbca', '#4e668e', '#2e3054', '#97b5c6', '#181520', '#ffce74', '#111222', '#e4e8dc'],
+      rows: [
+        '..............................................',
+        '..............................................',
+        '..............................................',
+        '..............................................',
+        '..............................................',
+        '............GGGG..............................',
+        '...........G1A5EGG............................',
+        '............GE3F9DG..........G................',
+        '.............GAAD37G....G...G8G...............',
+        '..........GGGG.7AD77G..GAGG.G4GG..GG..........',
+        '.........G5F9DA1117AGGG.G89GG8BEGG58GG........',
+        '...........ADCCD11E1.55GG54G.G928GG3BEG.......',
+        '........GG11771E5815B91GG84EGGEA8GG7FFAG......',
+        '.......G8FD3A58B63F6F1A1.E4B4E.E8E.EEC7G......',
+        '......G9FA7A52CC3F9D11A551E498.E88.A17AG......',
+        '.....GD9A17EB63C9A7D111ED7A154EE541AEF7AG.....',
+        '....GA9A7EA52FF5AD3A15D7AA5EE849581EEFC31G....',
+        '....GE11117B9EAA33C1E1A33AEB9E5D6A581E9CAG....',
+        '.....GG177D5EE373F81EAA11A11D38FD9881719DG....',
+        '......G773EC7A3F6611E95ADA59DA75FJ3917EA7G....',
+        '.....GE3D3A6DCD96F183CDAAA8F9DAAHI3CEA7DDG....',
+        '.....G733116C637F83F333C351115DD3DJ9F1C33AG...',
+        '.....GC31A5FCF3DC5D6C1DCAEEA59ADE15881FFC8G...',
+        '....G5F1118673CDE77BEADDDEDAE11E8EEJAA966DG...',
+        '....G851G.BFDC5177A17D313E58AA11D5I1E7DD3DG...',
+        '....G5G.GE2CF5AA331EEEA715DDD1AA1IJ11D73D1G...',
+        '.....GGADD26EADD11753737189DAAAA18EEE7AC7G....',
+        '.....GA6DA25AD3AAA7C33A1EE99D9751EE1AA7D7G....',
+        '....GAD7EE853DC13C8AD711EA187D51E7E.G1C6EG....',
+        '....G9DAEEE83CEDA9C8E111AE5E55117AEA.1F9G.....',
+        '...GE3AE117DF5173ACF751117A5A1111E3D1.95G.....',
+        '...G7951..AD4EEA7ACDAD11A1D11.A1D3AAA.8G......',
+        '...GE39AEEA75EA17DA697E1A1111.EA177DA1.G......',
+        '...G175DD7777E1117DCCD851111.GG1EEDDD8AEG.....',
+        '....GE7AA5938D51E9D9788D911EEAG.1789E489EG....',
+        '.....GG114558A51B8A2E8BE4811E1111D1B1E4E5G....',
+        '.......GGGGGGGG581EB119118GGGGGGGGG81.51G.....',
+        '...............GGGG8GG5GGG.........GG.GG......',
+        '...................G..G.......................',
+        '..............................................',
+        '..............................................',
+        '..............................................',
+      ],
+    },
+    855: { // 雷冠鳥ヴォルレイ
+      palette: [null, '#151424', '#2d2147', '#593e79', '#7c6599', '#a693b2', '#36344c', '#635871', '#8a748c', '#be9e7f', '#ebd5a1', '#faeec5', '#6e431e', '#a36530', '#d09444', '#fcca66', '#743747', '#ffdf67'],
+      rows: [
+        '..............................................',
+        '.......................................111....',
+        '........................11..........1117831...',
+        '......................11F21.....111185ABB1....',
+        '....................11DF11...1119685BBBB1.....',
+        '..............11...1EEF1....1C8943335B311.....',
+        '.............1D61.1FDF1..111CE73633785A5B1....',
+        '...........11D61.19EF1..158CEC223335ABBB561...',
+        '..........1FFC1.1DEFC1.19AED622335ABB86111....',
+        '.........1FEC1...19F61188DD1222263335B961.....',
+        '........1FEC11.117FDC11DEC612221212245BB71....',
+        '........17EC18179FEDC1GDDC2112322222123AB1....',
+        '........19DC899EFCC11.1122DD6223322222378B1...',
+        '........19C6A9DC88671...132C22323377325B71....',
+        '.......1DE997ED8A9B811..126E6233333BBA5B71....',
+        '........1D877E6389A53211136DG36348459BBB81....',
+        '........1D37226638A772662GD223333ABA878BA1....',
+        '.......1273H338828A8679DGE212232387A7117B1....',
+        '.......15AB637A622268AEEDC222337347181.1771...',
+        '.......15B6688637626A8336C62364955511...11....',
+        '.......171179162772693476223339B7B71..........',
+        '......111118778277467376622385791881.....1....',
+        '.....199DDC727A77746266378588917111.1111131...',
+        '....188621CDG6773866224795A96711..1185BB81....',
+        '....198222226226266667377369811..15AA8A71.....',
+        '...17A3333377626626662373628822115833881.1....',
+        '...1833488776689721226477669228577362111131...',
+        '...1298977364389111613832662216332211168A71...',
+        '...18BA757665926175727336111263358788ABB81....',
+        '...18A97A7216A116766788673112299AAA884491.....',
+        '...16B97911117138736A86677611116796323831.....',
+        '...15A99921..16BB66AB93237321..111111111......',
+        '...1578A261..1ABB77BB72127761.................',
+        '...1711911..18B9713BB12213A71.................',
+        '....1..161..16BB116B61111BB71.................',
+        '........1....19B1.1B1...1B961.................',
+        '.............1721..1...1BA71..................',
+        '..............111.....1B861...................',
+        '...............1.......111....................',
+        '..............................................',
+        '..............................................',
+        '..............................................',
+      ],
+    },
+    856: { // 翠環羊ミノセレス
+      palette: [null, '#1f1f3c', '#e8d2b3', '#638a7c', '#c2a68a', '#4e4a4d', '#897263', '#d4ebcf', '#343947', '#a0bdae', '#486867', '#e1c7a7', '#685b51', '#716466', '#a38b79', '#7e8480', '#181520', '#181c26', '#e5edab', '#efe1c7'],
+      rows: [
+        '..............................................',
+        '..............................................',
+        '..............................................',
+        '..............................................',
+        '.........................GGGG.................',
+        '........................G1DD1G.G..............',
+        '....................GGGGD241.GG1GG............',
+        '...................GD1DB246188EBE5G...........',
+        '............GGGG..G52E2FB4FB2B46C81G..........',
+        '.........GGG55C8GG8BBB642B24DD6E68G...........',
+        '........G8C5881.1.4EFC5EDB4C22FDDDG...........',
+        '.......G1AAF818.85E55FA9951C52222BFGGGG.......',
+        '......GF99FF77588DCD779A9798CC4B24B9D7FG......',
+        '.....G1A7A93979A85F9933A3973155CE214B6........',
+        '.....GF99AAA3AAA1133F9A83383A155BBDC66DGG.....',
+        '....GA7A88AAAA731A978AA1A8A398CCCEB656D85G....',
+        '....G93A8111AA998773A11111A3FA5C8C4E4EEE4G....',
+        '...G198A8181835A8FAAA185F188A8158E2B5856D5G...',
+        '...GAAA81FB618A983A81157AD83F8CBB4B2B8D55G....',
+        '...G88981B8D8AA7F7AA5C9F1883A8842B242FBB8G....',
+        '...G1A985D1D45AFFFA8C8A951AF81842EB44B62EG....',
+        '....GA3315A1EC6DE5F6C8A3979A86EDB864E6D2BDG...',
+        '....G8A9998111DBBB6118188AA81E2EC1C4EDE448G...',
+        '.....G1A581661HI2DIH5EE118184CB2C5841CE645G...',
+        '........1844685FJ5686BD518E424D4811C186C6DG...',
+        '.....G151E224D8BJD55D8185B222D1F1858816158G...',
+        '.......88BEE6C8HHE111866424BE18185C855511G....',
+        '.....G1.DD1C64E55888862426B415111885811GG.....',
+        '......GG85C558B48CE55B42C644C185518665G.......',
+        '.......GE6FBC584666D4445C464E1CC155CEEG.......',
+        '.......GCD246C1CC86D4C5C4E1E85C118CEE8G.......',
+        '......G85226CC1111CCDCD4C855111GG1C5151G......',
+        '......GDBB4C51111.1811E51111GGG..G111C5G......',
+        '.....GFB2BB8GGGGG..181811GGG......GG8C65G.....',
+        '.....GC85C4DG....G111111G..........G85C8G.....',
+        '....G5F59888G...G188111G...........G18588G....',
+        '...G1D1FD51G.....G1111G............G118181G...',
+        '...G181A811G......GGGG..............GGGGGG....',
+        '....GGGGGGG...................................',
+        '..............................................',
+        '..............................................',
+        '..............................................',
+      ],
+    },
     773: { // 蒼炎アンヴォル
       palette: [null, '#111218', '#95ecf7', '#3678a3', '#b99856', '#413c53', '#49b1f7', '#609eac', '#655375', '#28293b', '#35586d', '#5e7a8c', '#4599d3', '#513d27', '#70d1f5', '#64b6d5', '#181520'],
       rows: [

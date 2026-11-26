@@ -1924,6 +1924,10 @@ summary { cursor: pointer; }
   };
   DUNGEONS.push(STAR_CAVE);
 
+  const isAmaterasuDuel = (run, battle) => run?.dungeon === STAR_CAVE &&
+    run.floor?.number === STAR_CAVE.floors && battle?.kind === 'boss' &&
+    battle.enemies[0]?.species === STAR_CAVE.boss;
+
   function specialAttack(name, el, kind, power, mp, extra = {}) {
     const { all, effect, rate, pierce, drain, purge } = extra;
     const type = kind === 'physical' ? '物理攻撃' : '魔法攻撃';
@@ -2167,7 +2171,7 @@ summary { cursor: pointer; }
     ITEMS, SEED_IDS, ARENA_PERMITS, WEAPONS, AILMENTS, GROUND_DROPS, CHEST_DROPS, VAULT_DROPS, GROUND_SUPPLY_UPGRADES, CHEST_SUPPLY_UPGRADES,
     FAMILIES, DUNGEONS, S_DUNGEON, FINALE_DUNGEON, FINALE_BATTLES, SPECIES, BY_RANK, STARTERS, CAPS, ARENA, RECIPES, SPECIAL_RESULTS,
     RECIPE_BY_PAIR, DEX_REWARDS, advancedSkillAliases, pairKey, summitTrait, TRAINING, TRUE_TRAINING, TRAINING_ROOMS, TRAINING_OPPONENTS, FORGE_UNLOCK, LOCAL_SCOUTS,
-    DEEP_DUNGEONS, FINAL_DEEP_DUNGEON, FINAL_DEEP_FLOORS, FINAL_DEEP_BOSS, STAR_CAVE, crownforgeDragon, oracleFox, skyfireDragon, astralWingbeast,
+    DEEP_DUNGEONS, FINAL_DEEP_DUNGEON, FINAL_DEEP_FLOORS, FINAL_DEEP_BOSS, STAR_CAVE, isAmaterasuDuel, crownforgeDragon, oracleFox, skyfireDragon, astralWingbeast,
   });
 })();
 
@@ -3181,7 +3185,7 @@ summary { cursor: pointer; }
           if (healed > 0) logEvent(battle, unit.name + 'がHPを ' + healed + ' 吸収した。', 'good');
         }
         if (action.effect && enemy.hp && !enemy.perks.has('statusImmune')) {
-          let resistance = SPECIES[enemy.species].statusRes ? .73 : 1;
+          let resistance = enemy.statusRateScale ?? (SPECIES[enemy.species].statusRes ? .73 : 1);
           if (enemy.perks.has('statusRes')) resistance *= .66;
           if (has(enemy, 'anchor')) resistance *= .5;
           if (random() < action.rate * resistance) {
@@ -3252,7 +3256,7 @@ summary { cursor: pointer; }
 
   const { SPECIES, BY_RANK, DUNGEONS, S_DUNGEON, FINALE_DUNGEON, FINALE_BATTLES, ARENA, RANKS, STATS, S_RANK, MEAT_RANK_MULTIPLIERS, MEAT_SIZE_MULTIPLIERS, ITEMS, SEED_IDS, ARENA_PERMITS, WEAPONS, CHEST_DROPS, VAULT_DROPS, CHEST_SUPPLY_UPGRADES,
     TRAINING, TRUE_TRAINING, FORGE_UNLOCK,
-    DEEP_DUNGEONS, FINAL_DEEP_DUNGEON, FINAL_DEEP_FLOORS, FINAL_DEEP_BOSS, STAR_CAVE,
+    DEEP_DUNGEONS, FINAL_DEEP_DUNGEON, FINAL_DEEP_FLOORS, FINAL_DEEP_BOSS, STAR_CAVE, isAmaterasuDuel,
     TACTICS, SKILLS, DIFFICULTIES, TRAITS,
     STARTERS, EVENTS, DEX_REWARDS, newState, grantStarter, newMonster, monsterName, normalizeNickname, levelCap, monsterLevelCap, gainXP, battleStats, perksOf, breedingPlan, traitsOf,
     expansionCost, scoutChance, clamp, int, clone, weighted, pick, alive, add, slotsUsed, LOCAL_SCOUTS,
@@ -3305,6 +3309,8 @@ summary { cursor: pointer; }
   const caveBosses = BY_RANK[RANKS.indexOf('★')].filter(def => def.id !== STAR_CAVE.boss);
   const caveEscorts = BY_RANK[RANKS.indexOf('SS')].filter(def => def.size === 1 && !def.trainingOnly);
 
+  const caveEscortHp = number => 9000 + 1000 * (number / STAR_CAVE.bossEvery);
+
   function caveBossTeam(number, random) {
     if (number === STAR_CAVE.floors) return [{ species: STAR_CAVE.boss, lv: 99, scale: 1.42, hp: 99999 }];
     const depth = number / STAR_CAVE.bossEvery;
@@ -3314,7 +3320,7 @@ summary { cursor: pointer; }
     const escorts = [...caveEscorts];
     for (let i = leader.size; i < 3; i++) {
       const [def] = escorts.splice(Math.floor(random() * escorts.length), 1);
-      team.push({ species: def.id, lv: lv - 2, scale: 1.09, hp: 1600 + depth * 180 });
+      team.push({ species: def.id, lv: lv - 2, scale: 1.09, hp: caveEscortHp(number) });
     }
     return team;
   }
@@ -3424,12 +3430,24 @@ summary { cursor: pointer; }
     const members = team.filter(unit => state.party.includes(unit.uid) &&
       state.roster.some(mon => mon.uid === unit.uid && mon.species === unit.species)).map(restoreUnit);
     if (!alive(members).length) return {};
+    if (dungeon === STAR_CAVE && floor.sanctum && !floor.final && Array.isArray(floor.bossTeam)) {
+      const maxHp = caveEscortHp(floor.number);
+      for (let index = 1; index < floor.bossTeam.length; index++) {
+        floor.bossTeam[index].hp = maxHp;
+        if (battle?.kind !== 'boss' || battle.outcome) continue;
+        const enemy = battle.enemies?.[index];
+        if (!enemy?.stats) continue;
+        if (enemy.hp > 0) enemy.hp = Math.max(1, maxHp - (enemy.stats.hp - enemy.hp));
+        enemy.stats.hp = maxHp;
+      }
+    }
     const run = {
       kind: 'dungeon', dungeon: entrance ? { ...dungeon, ...entrance } : dungeon,
       floor: { ...floor, seen: new Set(floor.seen), opened: new Set(floor.opened),
         masterRolls: floor.masterRolls && new Set(floor.masterRolls) },
       team: members, travel, fights, purificationSteps, finalePhase, ended: false, penalized: false,
     };
+    if (isAmaterasuDuel(run, battle)) battle.enemies[0].statusRateScale = .25;
     return { run, battle: battle ? { ...battle, allies: members, enemies: battle.enemies.map(restoreUnit),
       newDiscoveries: new Set(battle.newDiscoveries) } : null };
   }
@@ -4408,6 +4426,7 @@ summary { cursor: pointer; }
         enemy.hp = enemy.stats.hp;
         if (enemies[index].actions) enemy.actionRange = enemies[index].actions;
       }
+      if (isAmaterasuDuel(this.run, battle)) battle.enemies[0].statusRateScale = .25;
       battle.newDiscoveries = new Set(battle.enemies.map(enemy => enemy.species)
         .filter(id => !this.state.observed.includes(id)));
       for (const enemy of battle.enemies) this.observe(enemy.species);
@@ -17812,7 +17831,7 @@ Seimyaku.recipePortraits = {
     D: [50, 54, 57], G: [43, 47, 50], A: [45, 49, 52], A7: [45, 49, 52, 55],
     Bm: [47, 50, 54], Em: [40, 43, 47], Fm: [41, 44, 48], C: [48, 52, 55],
     Dm: [50, 53, 57], F: [41, 45, 48], Bb: [46, 50, 53], Am: [45, 48, 52],
-    B7: [47, 51, 54, 57], E: [40, 44, 47],
+    B7: [47, 51, 54, 57], E: [40, 44, 47], Gm: [43, 46, 50], Eb: [51, 55, 58],
   };
   const PROGRESSIONS = {
     townA: ['D', 'A', 'G', 'D', 'Bm', 'G', 'A7', 'D'],
@@ -17841,6 +17860,87 @@ Seimyaku.recipePortraits = {
 
   function section(melody, bars, energy, lead, extras = {}) {
     return { melody: LINES[melody], chords: PROGRESSIONS[melody], bars, energy, lead, transpose: 0, ...extras };
+  }
+
+  const AMATERASU_DEDICATION = phrase(
+    'D5:3 Eb5 G5:2 A5:2 | Bb5:3 A5 G5:2 Eb5:2 | ' +
+    'D5:2 G5:2 A5 Bb5 A5 G5 | Eb5:3 C#5 D5:3 - | ' +
+    'A4:2 D5 Eb5 G5:3 A5 | Bb5:2 D6:3 C6 Bb5 A5 | ' +
+    'G5:2 F5:2 Eb5 G5 A5:2 | C#5:2 Eb5:2 D5:3 -', 8);
+  const AMATERASU_ASCENT = phrase(
+    'D6:2 C6 Bb5 A5:2 G5:2 | A5:3 G5 F5:2 D5:2 | ' +
+    'F5:2 A5 C6:2 D6:2 C6 | Bb5:3 A5 G5:3 - | ' +
+    'G5:2 A5 Bb5 D6:2 F6:2 | E6:2 D6 C6 Bb5:3 A5 | ' +
+    'G5:2 Bb5 A5 G5:2 Eb5:2 | A5:2 G5 Eb5 C#5:3 -', 8);
+  const AMATERASU_SUNRISE = phrase(
+    'A5:2 D6:3 C6 Bb5 A5 | F5:2 A5 Bb5:2 D6 C6 Bb5 | ' +
+    'G5:2 A5 Bb5 F6:2 E6 D6 | C6:2 A5 G5 E5:3 - | ' +
+    'D6:3 F6 E6 D6:2 A5 | Bb5:2 C6 D6 G6:2 F6 E6 | ' +
+    'D6:2 C6 Bb5 A5:2 G5 Eb5 | A5:2 Bb5 G5 C#6:2 D6:2', 8);
+  const AMATERASU_SHRINE = phrase(
+    'D5:4 -:2 Eb5 G5 | A5:3 Bb5 A5:2 G5:2 | ' +
+    'Eb5:4 D5:2 A4:2 | G4:2 Bb4:2 C#5:3 -', 8);
+  const AMATERASU_FAREWELL = phrase(
+    'D6:2 A5 G5 F5:2 G5:2 | Bb5:2 A5 G5 A5:2 D6:2 | ' +
+    'F6:3 E6 D6 C6 Bb5 A5 | G5:3 F5 Eb5:2 G5:2 | ' +
+    'A5:3 Bb5 D6:2 C6:2 | Bb5:3 A5 G5:2 Eb5:2 | ' +
+    'G5:2 A5 G5 Eb5 C#5:2 A4 | D5:3 A4 D5:2 -:2', 8);
+
+  const AMATERASU_CHAPEL = ['Dm', 'Bb', 'Gm', 'A7', 'Dm', 'Bb', 'Gm', 'A7'];
+  const AMATERASU_RISE = ['Bb', 'Dm', 'F', 'Gm', 'Bb', 'C', 'Gm', 'A7'];
+  const AMATERASU_LIGHT = ['Dm', 'Bb', 'Gm', 'C', 'F', 'Gm', 'Bb', 'A7'];
+  const ritual = (melody, chords, energy, texture, bars = melody.length) => ({ melody, chords, energy, texture, bars });
+
+  function amaterasuBar(section, index, energy) {
+    const events = [];
+    const [root, third, fifth] = CHORDS[section.chords[index % section.chords.length]];
+    const melody = section.melody[index % section.melody.length];
+    const quiet = section.texture === 'shrine' || section.texture === 'opening';
+    const bright = section.texture === 'sunrise' || section.texture === 'finale';
+    const note = (voice, pitch, step, duration, gain) => events.push({
+      voice, pitch, step, duration, gain: gain * energy,
+    });
+    for (const { pitch, position, duration } of melody) {
+      if (pitch === null) continue;
+      note('shakuhachi', pitch, position, duration * .93, .20);
+      if (position > .3 && duration > 1 && (position + index) % 3 === 0) {
+        note('shakuhachi', pitch - (pitch % 12 === 2 ? 1 : 2), position - .18, .16, .071);
+      }
+      if (duration >= 2 && (bright || section.texture === 'build')) {
+        note('choir', pitch - 12, position + .12, duration * .92, bright ? .076 : .052);
+      }
+    }
+
+    const arpeggio = [root + 12, fifth + 12, third + 24, root + 24, fifth + 24, third + 12, root + 24, fifth + 12];
+    const plucks = quiet ? [0, 3, 6] : [0, 1.5, 2, 3.5, 4, 5, 6.5, 7];
+    for (const [i, step] of plucks.entries()) {
+      note('koto', arpeggio[(i + index % 2 * 2) % arpeggio.length], step, 1.8,
+        step % 2 === 0 ? .106 : .068);
+    }
+    for (const pitch of [root + 12, third + 12, fifth + 12]) {
+      note('choir', pitch, .04, 7.76, quiet ? .032 : .052);
+    }
+    note('drone', root, 0, 7.8, .045);
+    if (!quiet) {
+      note('bass', root - 12, 0, 2.7, .089);
+      note('bass', (index % 2 ? fifth : root) - 12, 4, 1.7, .072);
+    }
+    if (bright) {
+      note('strings', root + 24, 0, 3.8, .045);
+      note('strings', fifth + 24, 4, 3.5, .047);
+      note('bell', index % 2 ? fifth + 36 : root + 36, .08, 3, .033);
+    }
+
+    if (index === 0 || (index % 8 === 4 && bright)) note('ritualGong', 0, 0, 7, .23);
+    const lowHits = quiet ? [[0, .28], [5, .13]] : [[0, .33], [3, .17], [4, .26], [6.5, .19]];
+    for (const [step, gain] of lowHits) note('taiko', 0, step, 1.4, gain);
+    const rimHits = quiet ? [7.5] : index % 4 === 3 ? [1.5, 5, 7, 7.5] : [2, 5.5, 7.5];
+    for (const step of rimHits) note('taikoRim', 0, step, .7, quiet ? .10 : .15);
+    if (bright && index % 2 === 1) {
+      note('taiko', 0, 7.5, 1.2, .21);
+      note('taikoRim', 0, 3.5, .6, .11);
+    }
+    return events;
   }
 
   const MUSIC = {
@@ -17887,6 +17987,19 @@ Seimyaku.recipePortraits = {
         section('bossReturn', 8, 1.05, 'fiddle', { harmony: true, bossStyle: 'drive', final: true }),
       ],
     },
+    amaterasu: {
+      title: '暁天の神楽', bpm: 136, beats: 8, echo: .31, wet: .34,
+      sections: [
+        ritual(AMATERASU_DEDICATION, AMATERASU_CHAPEL, .77, 'opening', 4),
+        ritual(AMATERASU_DEDICATION, AMATERASU_CHAPEL, .92, 'drive'),
+        ritual(AMATERASU_ASCENT, AMATERASU_RISE, 1.00, 'drive'),
+        ritual(AMATERASU_SHRINE, ['Dm', 'Bb', 'Eb', 'A7'], .63, 'shrine'),
+        ritual(AMATERASU_ASCENT, AMATERASU_RISE, .89, 'build'),
+        ritual(AMATERASU_SUNRISE, AMATERASU_LIGHT, 1.12, 'sunrise'),
+        ritual(AMATERASU_SUNRISE, ['Dm', 'Bb', 'Gm', 'C', 'Dm', 'Gm', 'Bb', 'A7'], 1.13, 'finale'),
+        ritual(AMATERASU_FAREWELL, ['Dm', 'Bb', 'F', 'Gm', 'Dm', 'Bb', 'A7', 'Dm'], 1.04, 'finale'),
+      ],
+    },
     arena: {
       title: 'C 黎明の誓い', bpm: 156, beats: 8, echo: .26, wet: .26,
       sections: [
@@ -17914,6 +18027,10 @@ Seimyaku.recipePortraits = {
       index -= row.bars;
       return false;
     });
+    if (id === 'amaterasu') {
+      const energy = section.energy + (section.texture === 'build' ? index * .027 : 0);
+      return { events: amaterasuBar(section, index, energy), energy, section: track.sections.indexOf(section), index };
+    }
     const position = index % section.melody.length;
     const energy = section.energy + (section.rising ? index / Math.max(1, section.bars - 1) * .48 : 0);
     const harmony = CHORDS[section.chords[position]].map(note => note + section.transpose);
@@ -18051,9 +18168,16 @@ Seimyaku.recipePortraits = {
     strings: { harmonics: [1, .33, .22, .15, .09, .06, .04], attack: .20, release: .36, cutoff: 2000, pan: .24, vibrato: 4, chorus: 4 },
     brass: { harmonics: [1, .36, .22, .12, .06, .03], attack: .035, release: .14, cutoff: 3000, pan: -.08 },
     bass: { harmonics: [1, .22, .08], attack: .008, release: .07, cutoff: 730, pan: 0, pluck: true },
+    shakuhachi: { harmonics: [1, .07, .28, .055, .11, .038, .035], attack: .061, release: .24,
+      cutoff: 3850, pan: -.19, vibrato: 9, breath: .072, echo: true },
+    koto: { harmonics: [1, .62, .30, .25, .13, .12, .09, .04], attack: .003, release: .34,
+      cutoff: 4500, pan: .24, pluck: true, echo: true },
+    choir: { harmonics: [1, .22, .47, .22, .18, .085, .052], attack: .34, release: .48,
+      cutoff: 2090, pan: .07, vibrato: 3, chorus: 7 },
     bell: { harmonics: [1, .05, .18, .015, .035, .11], attack: .005, release: .24, cutoff: 6500, pan: .16, pluck: true },
   };
-  const DRUMS = new Set(['kick', 'snare', 'shaker', 'cymbal', 'bodhran', 'bodhranTap']);
+  const RITUAL_DRUMS = new Set(['taiko', 'taikoRim', 'ritualGong']);
+  const DRUMS = new Set(['kick', 'snare', 'shaker', 'cymbal', 'bodhran', 'bodhranTap', ...RITUAL_DRUMS]);
 
   function seededNoise(length, seed = 74191) {
     const samples = new Float32Array(length);
@@ -18109,7 +18233,7 @@ Seimyaku.recipePortraits = {
       panner.pan.value = INSTRUMENTS[voice]?.pan ?? 0;
       filter.connect(panner).connect(this.input);
       panner.connect(this.reverb);
-      if (voice === 'flute' || voice === 'harp' || voice === 'bell') panner.connect(this.delay);
+      if (voice === 'flute' || voice === 'harp' || voice === 'bell' || INSTRUMENTS[voice]?.echo) panner.connect(this.delay);
       this.buses.set(voice, filter);
       return filter;
     }
@@ -18122,6 +18246,7 @@ Seimyaku.recipePortraits = {
         const envelope = this.context.createGain();
         envelope.gain.value = gain;
         source.connect(envelope).connect(this.input);
+        if (RITUAL_DRUMS.has(voice)) envelope.connect(this.reverb);
         source.start(at);
         source.onended = () => { source.disconnect(); envelope.disconnect(); };
         return;
@@ -18177,7 +18302,7 @@ Seimyaku.recipePortraits = {
         breath.buffer = this.breathBuffer;
         breath.loop = true;
         breathLevel = context.createGain();
-        breathLevel.gain.value = .024;
+        breathLevel.gain.value = typeof instrument.breath === 'number' ? instrument.breath : .024;
         breath.connect(breathLevel).connect(envelope);
         breath.start(at);
         breath.stop(at + duration + instrument.release + .02);
@@ -18196,7 +18321,8 @@ Seimyaku.recipePortraits = {
     drum(voice) {
       if (this.drums.has(voice)) return this.drums.get(voice);
       const sampleRate = this.context.sampleRate;
-      const duration = { kick: .23, snare: .18, shaker: .085, cymbal: 1.08, bodhran: .25, bodhranTap: .15 }[voice];
+      const duration = { kick: .23, snare: .18, shaker: .085, cymbal: 1.08, bodhran: .25, bodhranTap: .15,
+        taiko: .59, taikoRim: .19, ritualGong: 1.83 }[voice];
       const buffer = this.context.createBuffer(1, Math.ceil(sampleRate * duration), sampleRate);
       const data = buffer.getChannelData(0);
       const noise = seededNoise(data.length);
@@ -18218,6 +18344,25 @@ Seimyaku.recipePortraits = {
           case 'bodhran':
             phase += 2 * Math.PI * (89 + 60 * Math.exp(-t * 28)) / sampleRate;
             data[i] = (Math.sin(phase) * .70 + low * .30) * envelope;
+            break;
+          case 'taiko':
+            phase += 2 * Math.PI * (60 + 56 * Math.exp(-t * 26)) / sampleRate;
+            data[i] = (Math.sin(phase) * .62 * Math.exp(-t * 3.6) +
+              Math.sin(phase * 1.57) * .26 * Math.exp(-t * 7) +
+              Math.sin(t * 2 * Math.PI * 224) * .13 * Math.exp(-t * 16) +
+              (high * .14 + low * .20) * Math.exp(-t * 19)) * envelope;
+            break;
+          case 'taikoRim':
+            data[i] = (high * .27 * Math.exp(-t * 26) +
+              Math.sin(t * 2 * Math.PI * 762) * .22 * Math.exp(-t * 30) +
+              Math.sin(t * 2 * Math.PI * 279) * .29 * Math.exp(-t * 13)) * envelope;
+            break;
+          case 'ritualGong':
+            data[i] = (Math.sin(t * 2 * Math.PI * 146.8) * .18 +
+              Math.sin(t * 2 * Math.PI * 247.8) * .19 * Math.exp(-t * 1.8) +
+              Math.sin(t * 2 * Math.PI * 379.1) * .09 * Math.exp(-t * 2.8) +
+              Math.sin(t * 2 * Math.PI * 672.2) * .07 * Math.exp(-t * 4.0) +
+              high * .20 * Math.exp(-t * 18)) * envelope;
             break;
           case 'bodhranTap':
             data[i] = (Math.sin(t * 2 * Math.PI * 217) * .29 + high * .27) * envelope;
@@ -18245,6 +18390,7 @@ Seimyaku.recipePortraits = {
     // Keep the arena score playing between bouts and on the final result screen.
     if (game?.run?.kind === 'arena') return 'arena';
     if (game?.battle && !game.battle.outcome) {
+      if (Seimyaku.isAmaterasuDuel(game.run, game.battle)) return 'amaterasu';
       const boss = game.battle.kind === 'boss' || game.battle.kind === 'lord' ||
         (game.run?.kind === 'streak' && game.run.wave % 10 === 0);
       return boss ? 'boss' : 'battle';
@@ -20092,7 +20238,13 @@ Seimyaku.recipePortraits = {
       view.auto = false;
       return;
     }
-    if (battle !== previous && musicScene(game) === 'boss') { music.stop(); music.positions.delete('boss'); }
+    if (battle !== previous) {
+      const scene = musicScene(game);
+      if (scene === 'boss' || scene === 'amaterasu') {
+        music.stop();
+        music.positions.delete(scene);
+      }
+    }
     if (battle !== previous && (run.kind === 'dungeon' || !previous)) view.auto = run.kind === 'streak';
     if (!alive(battle.allies).some(unit => unit.key === view.activeUnit)) {
       view.activeUnit = alive(battle.allies)[0]?.key;

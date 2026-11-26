@@ -608,21 +608,55 @@ summary { cursor: pointer; }
 .item-use p { margin: 4px 0; color: var(--subtle); font-size: .8rem; }
 .item-use > div { display: flex; flex-wrap: wrap; gap: 4px; }
 .item-use .item-symbol { width: 26px; height: 26px; }
-.item-picker { display: grid; gap: 6px; margin-top: 7px; }
-.item-choice { width: 100%; display: grid; grid-template-columns: 32px minmax(0, 1fr); justify-content: start; text-align: left; gap: 8px; padding: 7px; }
-.item-choice .item-symbol, .item-target-header .item-symbol { width: 30px; height: 30px; }
-.item-choice > span:last-child { display: grid; min-width: 0; }
-.item-choice > span:last-child small { line-height: 1.25; white-space: normal; }
-.item-target-header { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
-.item-target-header p { color: var(--subtle); font-size: .74rem; line-height: 1.25; }
+.modal.inventory-dialog { display: flex; flex-direction: column; overflow: hidden; }
+.inventory-dialog > header { flex: none; }
+.inventory-dialog .inventory-scroll { min-height: 0; overflow: auto; overscroll-behavior: contain; padding-top: 0; }
+.hub-bag-actions { display: flex; align-items: center; gap: 8px; }
+.hub-bag-actions .btn { min-height: 38px; padding: 4px 9px; }
+.inventory-tabs {
+  position: sticky; z-index: 1; top: 0; display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(67px, 1fr)); gap: 5px;
+  padding: 9px 0 8px; background: #19292d; border-bottom: 1px solid var(--line-soft);
+}
+.inventory-tabs .btn { min-height: 40px; padding: 4px 5px; font-size: .79rem; white-space: nowrap; }
+.inventory-tabs .btn[aria-pressed="true"], .item-target[aria-pressed="true"] {
+  background: #304d44; border-color: #95bba7; color: #f5f9ec;
+}
+.inventory-notice { margin: 10px 0 2px; color: var(--subtle); font-size: .8rem; }
+.inventory-group + .inventory-group { margin-top: 14px; }
+.inventory-group h3 { margin: 10px 0 5px; color: var(--subtle); font-size: .82rem; }
+.inventory-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.inventory-row.btn {
+  display: grid; grid-template-columns: 25px minmax(0, 1fr) auto 9px; align-items: center;
+  gap: 6px; width: 100%; min-height: 43px; padding: 5px 7px; text-align: left;
+}
+.inventory-row .item-symbol { width: 25px; height: 25px; font-size: .85rem; }
+.inventory-row b { min-width: 0; font-size: .83rem; overflow-wrap: anywhere; }
+.inventory-count { color: #f0d094; font-size: .82rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inventory-chevron { color: var(--subtle); text-align: right; }
+.inventory-detail { padding-top: 12px; }
+.inventory-feedback { margin: 6px 0; padding: 7px 9px; background: #244337; color: #d4f0d8; border-radius: 7px; }
+.item-target-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.item-target-header .item-symbol { width: 34px; height: 34px; flex: none; }
+.item-target-header p { color: var(--subtle); font-size: .82rem; line-height: 1.45; margin: 3px 0 0; }
 .item-targets { display: grid; gap: 5px; margin-top: 5px; }
-.item-target { width: 100%; display: grid; grid-template-columns: 35px minmax(0, 1fr); justify-content: start; align-items: center; gap: 7px; text-align: left; padding: 4px 7px; }
+.item-target { width: 100%; display: grid; grid-template-columns: 35px minmax(0, 1fr); justify-content: start; align-items: center; gap: 7px; text-align: left; padding: 5px 7px; }
 .item-target:disabled { opacity: .68; }
 .item-target .portrait { width: 34px; height: 34px; }
 .item-target-info { display: grid; min-width: 0; line-height: 1.2; }
-.item-target-info > b { font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.item-picker-footer { margin-top: 7px; }
-.item-picker-footer .btn { min-height: 32px; }
+.item-target-info > b { font-size: .85rem; overflow-wrap: anywhere; }
+.item-picker-footer { margin-top: 12px; }
+.seed-form { display: grid; gap: 7px; margin-top: 11px; padding: 10px; background: #1c3235; border: 1px solid var(--line-soft); border-radius: 8px; }
+.seed-form label { display: flex; justify-content: space-between; align-items: center; gap: 7px; }
+.seed-form input { width: 100px; min-height: 40px; padding: 4px 8px; }
+.seed-presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(54px, 1fr)); gap: 5px; }
+.seed-presets .btn { min-height: 39px; padding: 4px; }
+.seed-form > .btn { width: 100%; min-height: 43px; }
+@media (max-width: 480px) {
+  .inventory-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+
 .weapon-shop-mode { margin-bottom: 10px; }
 .weapon-tier { margin-bottom: 10px; }
 .weapon-tier h2 { color: var(--gold); }
@@ -631,8 +665,7 @@ summary { cursor: pointer; }
 .weapon-equip select { width: 100%; }
 .history-pages { margin-top: 7px; }
 .log-history ol { max-height: none; overflow: visible; }
-.bag-list > div { display: flex; gap: 7px; align-items: center; margin-bottom: 5px; }
-.bag-list > div > span:nth-child(2), .setting-row > div { display: grid; font-size: .87rem; }
+.setting-row > div { display: grid; font-size: .87rem; }
 .modal:is(.parent-dialog, .lineage-dialog) { display: flex; flex-direction: column; overflow: hidden; }
 .modal:is(.parent-dialog, .lineage-dialog) > header { flex: none; }
 :is(.parent-dialog, .lineage-dialog) .modal-body { display: flex; flex-direction: column; min-height: 0; overflow: auto; }
@@ -3716,8 +3749,10 @@ summary { cursor: pointer; }
       return this.atBase() && kind === 'levelMax' && mon.lv < monsterLevelCap(mon);
     }
 
-    useGrowthItem(item, uid) {
-      if (!this.canUseGrowthItem(item, uid)) return false;
+    useGrowthItem(item, uid, quantity = 1) {
+      if (!this.canUseGrowthItem(item, uid) || !Number.isSafeInteger(quantity) ||
+          quantity < 1 || quantity > this.state.bag[item] ||
+          (quantity > 1 && (ITEMS[item].kind !== 'seed' || this.battle))) return false;
       const unit = this.run?.team.find(member => member.uid === uid);
       const before = this.state;
       if (!unit) this.state = clone(before);
@@ -3726,7 +3761,8 @@ summary { cursor: pointer; }
         const def = ITEMS[item];
         let result;
         if (def.kind === 'seed') {
-          const amount = 2 + Math.floor(this.random() * 3);
+          let amount = 0;
+          for (let i = 0; i < quantity; i++) amount += 2 + Math.floor(this.random() * 3);
           mon.seedStats ??= STATS.map(() => 0);
           mon.seedStats[def.stat] += amount;
           result = STATS[def.stat] + ' +' + amount;
@@ -3734,8 +3770,9 @@ summary { cursor: pointer; }
           gainXP(mon, Number.MAX_SAFE_INTEGER);
           result = 'Lv.' + mon.lv;
         }
-        add(this.state.bag, item, -1);
-        const message = monsterName(mon) + 'に' + def.name + 'を使った。' + result + '！';
+        add(this.state.bag, item, -quantity);
+        const used = quantity > 1 ? '×' + quantity : '';
+        const message = monsterName(mon) + 'に' + def.name + used + 'を使った。' + result + '！';
         if (unit) {
           const stats = battleStats(mon);
           if (unit.hp > 0) {
@@ -3753,7 +3790,7 @@ summary { cursor: pointer; }
         } else {
           this.commit(message, true);
         }
-        this.notice = monsterName(mon) + ' · ' + result;
+        this.notice = monsterName(mon) + ' · ' + result + (used ? '（' + def.name + used + '）' : '');
         return true;
       } catch (error) {
         this.state = before;
@@ -4574,11 +4611,12 @@ summary { cursor: pointer; }
       return this.itemTargets(item, key).length > 0;
     }
 
-    useItem(item, key) {
+    useItem(item, key, quantity = 1) {
       if (!this.itemAvailableThisTurn()) return this.hint(BATTLE_ITEM_LIMIT);
       if (!this.canUseItem(item, key)) return false;
       const { kind, value, name, all, effects, bonus } = ITEMS[item];
-      if (kind === 'seed') return this.useGrowthItem(item, this.itemTargets(item, key)[0].uid);
+      if (kind === 'seed') return this.useGrowthItem(item, this.itemTargets(item, key)[0].uid, quantity);
+      if (quantity !== 1) return false;
       add(this.state.bag, item, -1);
       if (this.battle) this.battle.itemTurn = this.battle.turn;
       if (kind === 'blast') {
@@ -17943,7 +17981,145 @@ Seimyaku.recipePortraits = {
     return events;
   }
 
+  const FINAL_BOSS_THEME = phrase(
+    'F#4:3 G#4 A4 C#5:2 E5 | D5:2 C#5 A4:2 E4 F#4:2 | ' +
+    'B4:2 D5:2 G5:2 F#5 D5 | C#5:3 G#4 B4:2 G#4 C#5 | ' +
+    'F#4:2 A4 C#5 E5:2 F#5:2 | D5:3 F#5 E5 D5 A4:2 | ' +
+    'G4 B4 D5 E5 D5:2 B4 G4 | C#5:3 B4 G#4:2 C#5:2', 8);
+  const FINAL_BOSS_SHADOW = phrase(
+    'A4:2 C#5 E5 F#5:3 E5 | D5:2 F#5 A5:2 G#5 E5 C#5 | ' +
+    'G5:2 E5 D5 B4:2 A4 G4 | G#4:2 C#5:2 E#5:3 - | ' +
+    'F#5:3 E5 C#5:2 A4 B4 | C#5:2 F#5:2 A5:2 B5 A5 | ' +
+    'G5:3 F#5 E5 G5:2 B5 | A5:2 G#5 F#5 E#5:3 C#5', 8);
+  const FINAL_BOSS_INTRO = phrase(
+    '-:2 C#5:2 A4:2 G#4 F#4 | A4:4 F#4:2 E4 F#4 | ' +
+    'B4:2 D5:2 G5:2 D5 B4 | G#4:3 C#5:2 G#4 E#4:2', 8);
+  const FINAL_BOSS_VEIL = phrase(
+    '-:2 C#5:2 G4:3 F#4 | A4:4 C#5:2 B4 A4 | ' +
+    'B4:2 D5:2 C5:2 B4 G4 | G#4:3 B4:2 C#5:3', 8);
+  const FINAL_BOSS_CLIMAX = phrase(
+    'F#5:2 G5 A5 C#6:3 E6 | D6:2 C#6:2 B5 A5:2 F#5 | ' +
+    'G5 B5 D6:2 E6:2 D6 B5 | C#6:3 B5 G#5:2 E#5 C#5 | ' +
+    'F#5:2 A5 C#6 E6:2 F#6:2 | D6:3 E6 F#6 A6:2 F#6 | ' +
+    'G6:2 F#6 E6 D6:2 B5 G5 | A5:2 G#5:2 E#5:2 C#5:2', 8);
+  const FINAL_BOSS_RESOLVE = phrase(
+    'F#5:3 E5 C#5:2 A4 C#5 | D5:3 F#5 E5:2 D5 A4 | ' +
+    'G4:2 B4 D5 F#5:2 E5 D5 | C#5:4 B4:2 G#4:2 | ' +
+    'F#4:2 G4 A4:2 C#5 E5:2 | D5:3 A4 B4:2 G4 F#4 | ' +
+    'G4:3 B4 A4:2 G4 B4 | C#5:2 F#4:4 -:2', 8);
+
+  const FINAL_BOSS_VOICINGS = {
+    eye: ['F#2', 'C#3', 'F#3', 'A3', 'E4'].map(midi),
+    dusk: ['D2', 'A2', 'F#3', 'A3', 'C#4'].map(midi),
+    eclipse: ['G2', 'D3', 'G3', 'B3', 'C#4'].map(midi),
+    gate: ['C#2', 'G#2', 'C#3', 'E#3', 'B3'].map(midi),
+    rift: ['B1', 'F#2', 'B2', 'D3', 'A3'].map(midi),
+    dawn: ['A1', 'E2', 'A2', 'C#3', 'B3'].map(midi),
+  };
+  const FINAL_BOSS_BODY = ['eye', 'dusk', 'eclipse', 'gate', 'eye', 'dusk', 'eclipse', 'gate'];
+  const FINAL_BOSS_TURN = ['eye', 'dawn', 'eclipse', 'gate', 'rift', 'dusk', 'eclipse', 'gate'];
+  const FINAL_BOSS_LIGHT = ['eye', 'dusk', 'eclipse', 'gate', 'eye', 'dawn', 'eclipse', 'gate'];
+  const finalBossSection = (melody, chords, energy, lead, arrangement) => ({
+    melody, chords, energy, lead, arrangement, bars: melody.length,
+  });
+
+  const FINAL_BOSS_TRACK = {
+    title: '星脈の審判', bpm: 152, beats: 8, echo: .28, wet: .31,
+    sections: [
+      finalBossSection(FINAL_BOSS_INTRO, FINAL_BOSS_BODY.slice(0, 4), .72, 'flute', 'opening'),
+      finalBossSection(FINAL_BOSS_THEME, FINAL_BOSS_BODY, .94, 'fiddle', 'advance'),
+      finalBossSection(FINAL_BOSS_SHADOW, FINAL_BOSS_TURN, 1.04, 'brass', 'surge'),
+      finalBossSection(FINAL_BOSS_VEIL, ['rift', 'dusk', 'eclipse', 'gate'], .67, 'choir', 'suspension'),
+      finalBossSection(FINAL_BOSS_THEME, FINAL_BOSS_TURN, .91, 'fiddle', 'build'),
+      finalBossSection(FINAL_BOSS_CLIMAX, FINAL_BOSS_LIGHT, 1.11, 'fiddle', 'climax'),
+      finalBossSection(FINAL_BOSS_SHADOW, FINAL_BOSS_TURN, 1.10, 'fiddle', 'climax'),
+      finalBossSection(FINAL_BOSS_RESOLVE, ['eye', 'dusk', 'eclipse', 'gate', 'eye', 'rift', 'gate', 'eye'],
+        .95, 'flute', 'return'),
+    ],
+  };
+
+  function finalBossBar(section, index, energy) {
+    const events = [];
+    const [root, fifth, tonic, third, color] = FINAL_BOSS_VOICINGS[section.chords[index]];
+    const { arrangement, lead } = section;
+    const opening = arrangement === 'opening';
+    const brassLead = arrangement === 'surge';
+    const early = opening || arrangement === 'advance' || brassLead;
+    const quiet = opening || arrangement === 'suspension';
+    const climax = arrangement === 'climax';
+    const taper = arrangement === 'return' && index >= 5 ? 1 - (index - 4) * .13 : 1;
+    const note = (voice, pitch, step, duration, gain) =>
+      events.push({ voice, pitch, step, duration, gain: gain * energy * taper });
+
+    for (const { pitch, position, duration } of section.melody[index]) {
+      if (pitch === null) continue;
+      const tune = pitch + (climax && pitch < 77 ? 12 : 0);
+      const level = lead === 'brass' ? .155 : lead === 'choir' ? .135 : .185;
+      note(lead, tune, position, duration * .96, level);
+      if (climax && duration >= 2) {
+        note('brass', tune - 12, position + .09, duration * .79, .074);
+      }
+    }
+
+    // An open fifth anchors the introductory choir, brass and chimes to the same chord.
+    note('choir', tonic, .05, 7.65, quiet ? .071 : .042);
+    note('choir', early ? fifth + 12 : color, .08, 7.58, quiet ? .053 : .043);
+    note('strings', third, .04, 7.6, quiet ? .034 : .048);
+    note('drone', root, .03, 7.63, quiet ? .056 : .028);
+    if (early) {
+      note('brass', root + 12, 0, opening ? 6.8 : 2.76, opening ? .114 : brassLead ? .079 : .107);
+      note('brass', fifth + 12, .04, opening ? 6.45 : 2.42, opening ? .067 : brassLead ? .049 : .061);
+      if (!opening && !brassLead) note('brass', third + 12, 4.02, 1.54, .068);
+    }
+    if (index % 4 === 0) {
+      if (early) note('bell', root + 24, .05, 3.08, opening ? .096 : .066);
+      else note('ritualGong', 0, 0, 3.8, quiet ? .25 : .18);
+    }
+
+    const arpeggio = [fifth + 36, early ? third + 12 : color + 12, third + 24, tonic + 24];
+    for (const [i, step] of (quiet ? [0, 2.5, 5, 7] : [1, 2.5, 4.5, 7]).entries()) {
+      const pitch = arpeggio[(i + index) % arpeggio.length];
+      const length = quiet ? 2.1 : 1.3;
+      const clashes = early && section.melody[index].some(note => note.pitch !== null &&
+        Math.abs(note.pitch - pitch) === 1 && note.position < step + length && note.position + note.duration > step);
+      note(i === 0 || quiet ? 'bell' : 'harp', clashes ? fifth + 12 : pitch, step, length, quiet ? .11 : .061);
+    }
+    if (quiet) {
+      if (index === 0 || index === 3) note('taiko', 0, 0, .8, .19);
+      if (index === 3) {
+        note('taikoRim', 0, 5.5, .4, .10);
+        note('taiko', 0, 7, .7, .19);
+      }
+      return events;
+    }
+
+    // The bass and drums emphasize a 3+3+2 pulse under an eight-step bar.
+    const rhythm = index % 2 === 0 ? [0, 1.5, 3, 4.5, 6, 7] : [0, 2, 3, 5, 6, 7.5];
+    for (const [i, step] of rhythm.entries()) {
+      const downbeat = step === 0 || step === 3 || step === 6;
+      const pitch = i % 3 === 1 ? fifth + 12 : root + (i === 4 ? 12 : 0);
+      note('bass', pitch, step, downbeat ? 1.12 : .55, downbeat ? .116 : .072);
+      if (downbeat) note('taiko', 0, step, 1.02, step === 0 ? .30 : .21);
+      else if (climax || step >= 4) note('taikoRim', 0, step, .46, .12);
+    }
+    note('strings', tonic + 12, 1.5, 1.20, .073);
+    note('strings', fifth + 24, 4.5, 1.28, .068);
+
+    if (climax || arrangement === 'build') {
+      note('strings', third + 24, 0, 2.72, .081);
+      note('choir', fifth + 24, 3.2, 4.4, .079);
+      note('brass', root + 24, 3, 1.25, .095);
+      note('brass', fifth + 12, 6, 1.32, .089);
+    }
+    if (index % 4 === 3) {
+      note('cymbal', 0, 6, 3, .06);
+      note('taikoRim', 0, 7.25, .25, .11);
+    }
+    return events;
+  }
+
   const MUSIC = {
+    finalBoss: FINAL_BOSS_TRACK,
     town: {
       title: '灯台街のワルツ', bpm: 90, beats: 6, echo: .32, wet: .20,
       sections: [
@@ -18027,6 +18203,10 @@ Seimyaku.recipePortraits = {
       index -= row.bars;
       return false;
     });
+    if (id === 'finalBoss') {
+      const { energy } = section;
+      return { events: finalBossBar(section, index, energy), energy, section: track.sections.indexOf(section), index };
+    }
     if (id === 'amaterasu') {
       const energy = section.energy + (section.texture === 'build' ? index * .027 : 0);
       return { events: amaterasuBar(section, index, energy), energy, section: track.sections.indexOf(section), index };
@@ -18391,6 +18571,12 @@ Seimyaku.recipePortraits = {
     if (game?.run?.kind === 'arena') return 'arena';
     if (game?.battle && !game.battle.outcome) {
       if (Seimyaku.isAmaterasuDuel(game.run, game.battle)) return 'amaterasu';
+      const { run, battle } = game;
+      if (run?.finalePhase === 2 && battle.kind === 'boss') {
+        const species = battle.enemies[0]?.species;
+        if ((run.dungeon === Seimyaku.FINALE_DUNGEON && species === Seimyaku.FINALE_BATTLES[1].enemies[0].species) ||
+            (run.dungeon === Seimyaku.FINAL_DEEP_DUNGEON && species === Seimyaku.FINAL_DEEP_BOSS.id)) return 'finalBoss';
+      }
       const boss = game.battle.kind === 'boss' || game.battle.kind === 'lord' ||
         (game.run?.kind === 'streak' && game.run.wave % 10 === 0);
       return boss ? 'boss' : 'battle';
@@ -18713,7 +18899,8 @@ Seimyaku.recipePortraits = {
       ${navBtn('dungeons', '探索先を選ぶ <span aria-hidden="true">→</span>', 'primary')}</div><div class="hero-place"><span aria-hidden="true">✦</span> 星脈の入口</div></section>
       ${!state.roster.length ? `<div class="callout"><b>灯台守からの申し出</b><p>新たな仲間と探索用の道具を受け取れます。</p>${btn('rescue', '仲間を迎える', '', 'primary')}</div>` : ''}
       <div class="hub-grid">
-        <section class="panel hub-panel"><div class="section-head"><h2>探索隊</h2><span class="counter">${slotsUsed(party)} / 3 枠</span></div>
+        <section class="panel hub-panel"><div class="section-head"><h2>探索隊</h2><div class="hub-bag-actions">
+          <span class="counter">${slotsUsed(party)} / 3 枠</span>${btn('bag', '道具袋', '', 'soft')}</div></div>
           ${party.length ? `<div class="hub-team">${party.map(miniMon).join('')}</div>` : none('探索に出る仲間を編成してください。')}
           ${navBtn('box', '仲間を編成する →', 'soft block')}</section>
         <section class="panel hub-panel trail"><div class="section-head"><h2>開拓の歩み</h2><span class="counter">${activePaths.filter(dungeon => state.cleared.includes(dungeon.id)).length} / ${activePaths.length} 踏破</span></div>
@@ -19834,23 +20021,85 @@ Seimyaku.recipePortraits = {
       <p class="mini">スキル ${def.skills.map(id => SKILLS[id].name).join(' ／ ')}</p>`;
   }
 
-  function itemsModal(game, selected) {
-    if (!game.itemAvailableThisTurn()) return none(BATTLE_ITEM_LIMIT);
-    const rows = Object.entries(ITEMS).filter(([id]) => game.itemInContext(id));
-    const item = rows.find(([id]) => id === selected)?.[1];
-    if (!item) return rows.length ? `<p class="mini muted">${game.battle ? BATTLE_ITEM_LIMIT : '使う道具を選んでください。'}</p><div class="item-picker">${rows.map(([id, option]) =>
-      btn('item-select', `${itemSymbol(id)}<span><b>${option.name} <small>×${game.state.bag[id]}</small></b><small>${option.desc}</small></span>`, `data-id="${id}"`, 'item-choice')).join('')}</div>` :
-      none('この場面で使える道具がありません。');
-    const untargeted = item.all || ['guide', 'purify', 'blast'].includes(item.kind);
-    const team = item.kind === 'seed' ? game.run.team.filter(unit => game.canUseGrowthItem(selected, unit.uid)) : game.run.team;
-    return `<div class="item-target-header">${itemSymbol(selected)}<div><b>${item.name} ×${game.state.bag[selected]}</b><p>${item.desc}</p></div></div>
-      ${untargeted ? btn('use', '使う', `data-id="${selected}"`, 'primary', !game.canUseItem(selected)) :
-      `<p class="mini muted">誰に使いますか？</p><div class="item-targets">${team.map(unit => {
-        const ailments = Object.keys(unit.effects).map(effect => AILMENTS[effect]).filter(Boolean);
-        const label = `<span class="portrait">${image(unit.species)}</span><span class="item-target-info"><b>${esc(unit.name)}${unit.hp ? '' : '（戦闘不能）'}</b>
-          ${ailments.length ? '<small>' + ailments.join(' · ') + '</small>' : ''}${meter(unit.hp, unit.stats.hp, 'hp')}${meter(unit.mp, unit.stats.mp, 'mp')}</span>`;
-        return btn('use', label, `data-id="${selected}" data-key="${unit.key}"`, 'item-target', !game.canUseItem(selected, unit.key));
-      }).join('')}</div>`}<div class="item-picker-footer">${btn('item-list', '← 道具を選び直す', '', 'soft')}</div>`;
+  const ITEM_GROUPS = [
+    ['heal', '回復', ['heal', 'mp', 'mix', 'revive']],
+    ['cure', '治療', ['cure']],
+    ['growth', '育成', ['seed', 'levelMax']],
+    ['travel', '探索・戦闘', ['return', 'guide', 'purify', 'blast']],
+    ['recruit', '勧誘・配合', ['meat', 'rare']],
+    ['key', '重要品', ['key']],
+  ];
+  const itemCount = count => `<span class="inventory-count">×${fmt(count)}</span>`;
+
+  function inventoryModal(game, modal, inRun) {
+    if (inRun && !game.itemAvailableThisTurn()) return none(BATTLE_ITEM_LIMIT);
+    const { state } = game;
+    const item = ITEMS[modal.id];
+    const allowed = id => inRun ? game.itemInContext(id) : Boolean(state.bag[id]);
+    const feedback = modal.itemFeedback ? `<p class="inventory-feedback" role="status">${esc(modal.itemFeedback)}</p>` : '';
+    if (!item || !allowed(modal.id)) {
+      const groups = ITEM_GROUPS.map(([group, label, kinds]) => ({
+        group, label, items: Object.entries(ITEMS).filter(([id, def]) => allowed(id) && kinds.includes(def.kind)),
+      })).filter(row => row.items.length);
+      const selected = groups.some(row => row.group === modal.itemGroup) ? modal.itemGroup : 'all';
+      if (!groups.length) return feedback + none(inRun ? 'この場面で使える道具がありません。' : '道具袋は空です。');
+      return `<div class="inventory-tabs" role="group" aria-label="道具の種類">${[['all', 'すべて'],
+        ...groups.map(({group, label}) => [group, label])].map(([id, label]) => btn('item-category', label,
+          `data-id="${id}" aria-pressed="${selected === id}"`, 'soft')).join('')}</div>
+        ${feedback}${game.battle ? `<p class="inventory-notice">${BATTLE_ITEM_LIMIT}</p>` : ''}
+        ${groups.filter(row => selected === 'all' || row.group === selected).map(({ label, items }) =>
+          `<section class="inventory-group"><h3>${label}</h3><div class="inventory-grid">
+            ${items.map(([id, def]) => btn('item-select', `${itemSymbol(id)}<b>${esc(def.name)}</b>${itemCount(state.bag[id])}
+              <span class="inventory-chevron" aria-hidden="true">›</span>`, `data-id="${id}"`, 'inventory-row soft')).join('')}
+          </div></section>`).join('')}`;
+    }
+
+    const id = modal.id;
+    const { kind } = item;
+    let controls = '';
+    if (kind === 'seed' && !game.battle) {
+      controls = seedTargetPanel(game, modal);
+    } else if (inRun) {
+      const untargeted = item.all || ['guide', 'purify', 'blast'].includes(kind);
+      const team = kind === 'seed' ? game.run.team.filter(unit => game.canUseGrowthItem(id, unit.uid)) : game.run.team;
+      controls = untargeted ? btn('use', '使う', `data-id="${id}"`, 'primary', !game.canUseItem(id)) :
+        `<p class="mini muted">誰に使いますか？</p><div class="item-targets">${team.map(unit => {
+          const ailments = Object.keys(unit.effects).map(effect => AILMENTS[effect]).filter(Boolean);
+          const label = `<span class="portrait">${image(unit.species)}</span><span class="item-target-info"><b>${esc(unit.name)}${unit.hp ? '' : '（戦闘不能）'}</b>
+            ${ailments.length ? '<small>' + ailments.join(' · ') + '</small>' : ''}${meter(unit.hp, unit.stats.hp, 'hp')}${meter(unit.mp, unit.stats.mp, 'mp')}</span>`;
+          return btn('use', label, `data-id="${id}" data-key="${unit.key}"`, 'item-target', !game.canUseItem(id, unit.key));
+        }).join('')}</div>`;
+    } else if (kind === 'levelMax') {
+      const targets = state.roster.filter(mon => game.canUseGrowthItem(id, mon.uid));
+      controls = targets.length ? `<p class="mini muted">誰に使いますか？</p><div class="item-targets">${targets.map(mon =>
+        btn('growth-use', `<span class="portrait">${image(mon.species)}</span><span class="item-target-info">
+          <b>${esc(monsterName(mon))}</b><small>Lv.${mon.lv} → Lv.${monsterLevelCap(mon)}</small></span>`,
+          `data-id="${mon.uid}"`, 'item-target')).join('')}</div>` :
+        '<p class="mini muted">レベル上限に達していない仲間がいません。</p>';
+    }
+    return `<div class="inventory-detail">${feedback}<div class="item-target-header">${itemSymbol(id)}<div>
+      <b>所持 ${itemCount(state.bag[id])}</b><p>${esc(item.desc)}</p></div></div>
+      ${controls}<div class="item-picker-footer">${btn('item-list', '← 道具一覧へ', '', 'soft')}</div></div>`;
+  }
+
+  function seedTargetPanel(game, modal) {
+    const id = modal.id, stock = game.state.bag[id];
+    const members = game.party.filter(mon => game.canUseGrowthItem(id, mon.uid));
+    if (!members.length) return '<p class="mini muted">編成中の仲間がいません。</p>';
+    const target = members.find(mon => mon.uid === modal.seedUid);
+    const cap = Math.max(1, stock);
+    return `<p class="mini muted">使う仲間を選んでください。</p><div class="item-targets" role="group" aria-label="使う仲間">
+      ${members.map(mon => btn('seed-target', `<span class="portrait">${image(mon.species)}</span><span class="item-target-info"><b>${esc(monsterName(mon))}</b>
+        <small>Lv.${mon.lv} · ${STATS[ITEMS[id].stat]} ${fmt(Object.values(battleStats(mon))[ITEMS[id].stat])}</small></span>`,
+        `data-id="${mon.uid}" aria-pressed="${target?.uid === mon.uid}"`, 'item-target')).join('')}</div>
+      ${target ? `<form id="seed-use-form" class="seed-form">
+        <label for="seed-quantity">使う個数<input id="seed-quantity" name="quantity" type="number" inputmode="numeric" required min="1"
+          step="1" max="${cap}" value="${esc(modal.seedQty ?? 1)}"></label>
+        ${stock > 1 ? `<div class="seed-presets" role="group" aria-label="使う個数を選ぶ">
+          ${[1,5,10].filter(n => n < stock).map(n => btn('seed-quantity', n + '個', `data-id="${n}"`, 'soft')).join('')}
+          ${btn('seed-quantity', '全部', `data-id="${stock}"`, 'soft')}</div>` : ''}
+        <button type="submit" class="btn primary">種を使う</button>
+      </form>` : ''}`;
   }
 
   function meatModal(game, view) {
@@ -19863,23 +20112,6 @@ Seimyaku.recipePortraits = {
       <p class="mini muted">${BATTLE_ITEM_LIMIT}</p><div class="meat-picker">${meats.map(([id, item]) =>
         btn('meat', `${itemSymbol(id)}<span><b>${esc(item.name)} <small>×${game.state.bag[id]}</small></b><small>勧誘率 ＋${formatScoutRate(game.scoutMeatGain(target, id))}</small></span>`,
           `data-id="${id}"`, 'meat-choice', game.scoutRate(target) >= .8)).join('')}</div>`;
-  }
-
-  function bagModal(game) {
-    const { state } = game;
-    const rows = Object.entries(ITEMS).filter(([id]) => state.bag[id]);
-    return rows.length ? `<div class="bag-list">${rows.map(([id, item]) =>
-      `<div>${itemSymbol(id)}<span><b>${item.name} ×${state.bag[id]}</b><small>${item.desc}</small></span>
-        ${['seed', 'levelMax'].includes(item.kind) ? btn('growth-target', '使う', `data-id="${id}" aria-label="${item.name}を使う"`, 'soft',
-          !state.roster.some(mon => game.canUseGrowthItem(id, mon.uid))) : ''}</div>`).join('')}</div>` : none('道具袋は空です。');
-  }
-
-  function growthTargets(game, item) {
-    const targets = game.state.roster.filter(mon => game.canUseGrowthItem(item, mon.uid));
-    return `<p>使う仲間を選んでください。</p><div class="recommend-list">${targets.map(mon =>
-      btn('growth-use', `<span class="portrait">${image(mon.species)}</span>
-        <span class="recommend-copy"><b>${esc(monsterName(mon))}</b><small>Lv.${mon.lv}${ITEMS[item].kind === 'levelMax' ? ' → Lv.' + monsterLevelCap(mon) : ''}</small></span>`,
-        `data-id="${mon.uid}"`, 'recommend-pair')).join('')}</div>`;
   }
 
   const PARENT_SORT = { '': '預かり順', level: '高レベル順', rank: '高ランク順', plus: '＋値が高い順', child: '子のランク順' };
@@ -20015,7 +20247,7 @@ Seimyaku.recipePortraits = {
       }
       case 'items':
         if (game.run?.kind !== 'dungeon' || game.run.ended || game.battle?.outcome) return '';
-        title = modal.id ? ITEMS[modal.id].name : '道具を使う'; body = itemsModal(game, modal.id); break;
+        title = modal.id ? ITEMS[modal.id].name : '道具を使う'; body = inventoryModal(game, modal, true); break;
       case 'battle-tactics':
         if (!game.battle || game.battle.outcome) return '';
         title = '戦闘中の作戦';
@@ -20035,9 +20267,8 @@ Seimyaku.recipePortraits = {
           <div class="history-pages">${btn('history-page', '← 新しい', 'data-step="-1"', '', historyPage === 0)}<span>${historyPage + 1} / ${lastPage}</span>${btn('history-page', '以前 →', 'data-step="1"', '', historyPage >= lastPage - 1)}</div></div>`;
         break;
       case 'bag':
-        title = '道具袋'; body = bagModal(game); break;
-      case 'growth-target':
-        title = ITEMS[modal.id].name; body = growthTargets(game, modal.id); break;
+        if (!game.atBase()) return '';
+        title = modal.id ? ITEMS[modal.id].name : '道具袋'; body = inventoryModal(game, modal, false); break;
       case 'floor-event': {
         const floor = game.run?.floor;
         const event = floor && EVENTS[floor.event];
@@ -20148,20 +20379,22 @@ Seimyaku.recipePortraits = {
       case 'reset':
         title = '新しい冒険を始める'; body = '<p>冒険を始めると現在のセーブを上書きします。</p>' + actions('reset', '選択画面へ', '', 'danger-btn'); break;
     }
-    const dialogClass = modal.type === 'parent' ? ' parent-dialog' : modal.type === 'breed-history' ? ' lineage-dialog' : '';
+    const dialogClass = ['bag', 'items'].includes(modal.type) ? ' inventory-dialog' :
+      modal.type === 'parent' ? ' parent-dialog' : modal.type === 'breed-history' ? ' lineage-dialog' : '';
     return `<div class="modal-layer"${modal.type === 'floor-event' ? '' : ' data-overlay'}><section class="modal${dialogClass}" role="dialog" aria-modal="true" aria-labelledby="dialog-title" tabindex="-1">
       <header><h2 id="dialog-title">${title}</h2>${btn('close', '×', 'aria-label="閉じる"', 'icon-btn')}</header>
-      <div class="modal-body">${body}</div></section></div>`;
+      <div class="modal-body${['bag', 'items'].includes(modal.type) ? ' inventory-scroll' : ''}">${body}</div></section></div>`;
   }
 
-  Object.assign(Seimyaku, { panels: { box, breed: breedPage, arena, shop, armory, forge: forgePage, dex }, dialog });
+  Object.assign(Seimyaku, { panels: { box, breed: breedPage, arena, shop, armory, forge: forgePage, dex },
+    dialog, ITEM_GROUPS });
 })();
 
 (() => {
   'use strict';
 
   const { Vault, Game, MusicPlayer, SoundEffects, battleSoundSequence, musicScene, ACTIONS, ITEMS, SPECIES, SAVE_KEYS, PAGES, techniques, alive, canTargetAlly, fraction,
-    RANKS, TRAINING_ROOMS, STAR_CAVE, breedingPlan, breedingRecommendations, draw, dialog } = Seimyaku;
+    RANKS, TRAINING_ROOMS, STAR_CAVE, ITEM_GROUPS, breedingPlan, breedingRecommendations, draw, dialog } = Seimyaku;
   const root = document.getElementById('app');
   const overlay = document.getElementById('overlay');
   const announce = document.getElementById('announce');
@@ -20240,7 +20473,7 @@ Seimyaku.recipePortraits = {
     }
     if (battle !== previous) {
       const scene = musicScene(game);
-      if (scene === 'boss' || scene === 'amaterasu') {
+      if (scene === 'boss' || scene === 'amaterasu' || scene === 'finalBoss') {
         music.stop();
         music.positions.delete(scene);
       }
@@ -20279,7 +20512,8 @@ Seimyaku.recipePortraits = {
     const inputSelection = typing && focused instanceof HTMLInputElement ? [focused.selectionStart, focused.selectionEnd] : null;
     const oldModal = overlay.querySelector('.modal');
     const oldTitle = oldModal?.querySelector('h2')?.textContent;
-    const oldModalScroll = oldModal?.scrollTop ?? 0;
+    const oldScrollArea = oldModal?.querySelector('.inventory-scroll') ?? oldModal;
+    const oldModalScroll = oldScrollArea?.scrollTop ?? 0;
     const oldLogScroll = root.querySelector('#battle-log')?.scrollTop ?? 0;
     const oldMap = root.querySelector('.map-viewport');
     const mapScroll = oldMap ? [oldMap.scrollLeft, oldMap.scrollTop] : [0, 0];
@@ -20292,7 +20526,10 @@ Seimyaku.recipePortraits = {
     root.inert = !!view.modal;
     document.body.classList.toggle('has-modal', !!view.modal);
     const newModal = overlay.querySelector('.modal');
-    if (newModal && oldTitle === newModal.querySelector('h2').textContent) newModal.scrollTop = oldModalScroll;
+    if (newModal && oldTitle === newModal.querySelector('h2').textContent) {
+      const scrollArea = newModal.querySelector('.inventory-scroll') ?? newModal;
+      scrollArea.scrollTop = oldModalScroll;
+    }
     const log = root.querySelector('#battle-log');
     if (log && oldLogScroll > 10) log.scrollTop = oldLogScroll;
     const map = root.querySelector('.map-viewport');
@@ -20375,6 +20612,7 @@ Seimyaku.recipePortraits = {
     if (view.blocked) return;
     const id = info.id;
     const number = Number(id);
+    const inventory = ['bag', 'items'].includes(view.modal?.type) ? view.modal : null;
     const previousFloor = game.run?.floor;
     const previous = game.battle;
     const outcome = previous?.outcome;
@@ -20529,8 +20767,51 @@ Seimyaku.recipePortraits = {
         case 'items':
           if (game.run?.kind === 'dungeon' && !game.run.ended && !game.run.floor.collectionHall && !game.battle?.outcome && game.itemAvailableThisTurn()) open('items');
           break;
-        case 'item-select': if (view.modal?.type === 'items' && game.itemInContext(id)) view.modal.id = id; break;
-        case 'item-list': if (view.modal?.type === 'items') view.modal.id = null; break;
+        case 'item-category':
+          if (inventory && !inventory.id && (id === 'all' || ITEM_GROUPS.some(([group]) => group === id))) {
+            inventory.itemGroup = id;
+          }
+          break;
+        case 'item-select':
+          if (inventory && Object.hasOwn(ITEMS, id) &&
+              (inventory.type === 'bag' ? game.atBase() && game.state.bag[id] : game.itemInContext(id))) {
+            Object.assign(inventory, { id, seedUid: null, seedQty: 1, itemFeedback: '' });
+          }
+          break;
+        case 'item-list':
+          if (inventory) Object.assign(inventory, { id: null, seedUid: null, seedQty: 1, itemFeedback: '' });
+          break;
+        case 'seed-target':
+          if (inventory && ITEMS[inventory.id]?.kind === 'seed' && !game.battle &&
+              game.canUseGrowthItem(inventory.id, number)) inventory.seedUid = number;
+          break;
+        case 'seed-quantity':
+          if (inventory?.seedUid && !game.battle && Number.isSafeInteger(number) &&
+              number > 0 && number <= game.state.bag[inventory.id]) inventory.seedQty = number;
+          break;
+        case 'seed-use': {
+          if (!inventory || ITEMS[inventory.id]?.kind !== 'seed' || game.battle) break;
+          const item = inventory.id;
+          const quantity = Number(info.qty);
+          const member = game.run?.team.find(unit => unit.uid === inventory.seedUid);
+          const used = inventory.type === 'bag' ? game.useGrowthItem(item, inventory.seedUid, quantity) :
+            member && game.useItem(item, member.key, quantity);
+          if (used) {
+            inventory.itemFeedback = game.notice;
+            inventory.seedQty = 1;
+            if (!game.state.bag[item]) inventory.id = inventory.seedUid = null;
+            cue = 'heal';
+          }
+          break;
+        }
+        case 'growth-use':
+          if (inventory?.type === 'bag' && ITEMS[inventory.id]?.kind === 'levelMax' &&
+              game.useGrowthItem(inventory.id, number)) {
+            inventory.id = null;
+            inventory.itemFeedback = game.notice;
+            cue = 'heal';
+          }
+          break;
         case 'ask-return': if (!game.inTraining()) open('return'); break;
         case 'return':
           if (game.returnHome()) { view.modal = null; view.page = 'home'; resetScroll = true; }
@@ -20689,17 +20970,7 @@ Seimyaku.recipePortraits = {
           }
           break;
         }
-        case 'growth-target':
-          if (view.modal?.type === 'bag' && game.state.roster.some(mon => game.canUseGrowthItem(id, mon.uid))) {
-            const returnTo = view.modal;
-            open('growth-target', id);
-            view.modal.returnTo = returnTo;
-          }
-          break;
-        case 'growth-use':
-          if (view.modal?.type === 'growth-target' && game.useGrowthItem(view.modal.id, number)) view.modal = view.modal.returnTo;
-          break;
-        case 'bag': open('bag'); break;
+        case 'bag': if (game.atBase() && !game.state.awaitingStarter) open('bag'); break;
         case 'paginate': view[id + 'Page'] += Number(info.step); break;
         case 'breed-recommend':
           if (!game.atBase()) break;
@@ -20824,6 +21095,7 @@ Seimyaku.recipePortraits = {
       }
       showNotice(game.notice);
       render({ resetScroll });
+      if (action === 'item-category') overlay.querySelector('.inventory-scroll')?.scrollTo(0, 0);
       if (action === 'rename' && view.modal?.type === 'rename') document.getElementById('nickname')?.focus();
       if (action === 'paginate' && id === 'box') {
         const toolbar = root.querySelector('.box-toolbar');
@@ -20850,9 +21122,13 @@ Seimyaku.recipePortraits = {
   });
 
   document.addEventListener('submit', event => {
-    if (event.target.id !== 'rename-form') return;
-    event.preventDefault();
-    handle('rename', { value: new FormData(event.target).get('nickname') });
+    if (event.target.id === 'seed-use-form') {
+      event.preventDefault();
+      handle('seed-use', { qty: new FormData(event.target).get('quantity') });
+    } else if (event.target.id === 'rename-form') {
+      event.preventDefault();
+      handle('rename', { value: new FormData(event.target).get('nickname') });
+    }
   });
 
   document.addEventListener('change', event => {
@@ -20891,6 +21167,10 @@ Seimyaku.recipePortraits = {
     render({ typing: true });
   }
   document.addEventListener('input', event => {
+    if (event.target.id === 'seed-quantity' && ['bag', 'items'].includes(view.modal?.type)) {
+      view.modal.seedQty = event.target.value;
+      return;
+    }
     if (event.target.dataset.change === 'musicVolume') {
       const volume = Number(event.target.value);
       const scene = musicScene(game);

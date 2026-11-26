@@ -1376,7 +1376,7 @@ summary { cursor: pointer; }
       clue: 'シェルアークの殻に刻まれた溝を潮が走り、五つの音を鳴らした。最後の音に合わせて、岩壁の上に影が走る。',
       report: '港で魔物が現れる前にも五つの音が聞こえています。潮の先は上の空洞へ続きます。暮翼の天井へ向かいましょう。' },
     { boss: 825, hp: 10000, title: '天井を照らす合図',
-      clue: 'シエラネが翼を畳むと、稲妻の跡が天井に残った。跡をつなぐと、黒い祭壇へ向かう古い観測路になる。',
+      clue: 'シエラネが翼を畳むと、天井の刻み目に霜が降りて星印が浮かんだ。印をつなぐと、黒い祭壇へ向かう古い観測路になる。',
       report: 'その合図は地上の観測塔が建つ前から使われていたものです。観測路の終点、黒壇の座に記録が残っているかもしれません。' },
     { boss: 826, hp: 12000, title: '黒壇の石板',
       clue: 'カチヴァルが抱えていた石板には、七つの星印と、その下の閉じた門が彫られていた。赤い飛沫の印だけがまだ光っている。',
@@ -1546,7 +1546,7 @@ summary { cursor: pointer; }
     { id: 822, template: 777, rank: SS_RANK, name: '赫槌炎王ガンドラ', element: 'ember', desc: '肩に載せた炉鋼の槌で、噴き出す熔岩に道をつける炎霊族。', parents: [777, 805] },
     { id: 823, template: 783, rank: STAR_RANK, name: '天狐カガリハ', element: 'ember', desc: '尾を扇に開き、昇る太陽の火を九つに分ける狐獣の頂点。', parents: [783, 810] },
     { id: 824, template: 784, rank: STAR_RANK, name: '万樹祖ユグポロ', element: 'leaf', desc: '星脈に根を下ろし、他の芽球に四季を教えた古樹。', parents: [784, 790] },
-    { id: 825, template: 785, rank: STAR_RANK, name: '天嵐鳥シエラネ', element: 'volt', desc: '翼を返すたびに雲海の流れが変わる、雫鳥の頂点。', parents: [785, 811] },
+    { id: 825, template: 785, rank: STAR_RANK, name: '天嵐鳥シエラネ', element: 'tide', desc: '氷羽を返して雲海を凍てつかせ、吹雪を裂いて急降下する雫鳥の頂点。', parents: [785, 811] },
     { id: 826, template: 786, rank: STAR_RANK, name: '星鋏帝カチヴァル', element: 'stone', desc: '巨大な二叉の角で星鉱を割り、その欠片を甲に育てる殻虫の頂点。', parents: [786, 794] },
     { id: 827, template: 787, rank: STAR_RANK, name: '雲海羊リュミラ', element: 'dawn', desc: '跳ねるたびに星の綿雲が広がる綿羊の頂点。', parents: [787, 813] },
     { id: 828, template: 788, rank: STAR_RANK, name: '雷帆王ヴァリアス', element: 'volt', desc: '逆さに吊った大帆で雷鳴の方角さえ曲げる帆蝠の頂点。', parents: [788, 812] },
@@ -2030,7 +2030,7 @@ summary { cursor: pointer; }
     822: ['赫槌の炉鋼', physical('炉槌打ち', 'ember', 2.16, 17, { pierce: .57, effect: 'weak', rate: .58 })],
     823: ['天狐の九耀', magic('九耀の火扇', 'ember', 1.85, 24, { all: true, purge: true })],
     824: ['万樹の年輪', heal('万樹の芽吹き', 1.34, 24, { cleanse: true })],
-    825: ['天嵐の雲路', physical('天嵐返し', 'volt', 1.81, 23, { all: true, effect: 'paralysis', rate: .61 })],
+    825: ['天嵐の氷翼', physical('氷嵐返し', 'tide', 1.81, 23, { all: true, effect: 'freeze', rate: .42 })],
     826: ['星鋏の星鉱', physical('星鉱断ち', 'stone', 2.37, 22, { pierce: .76, purge: true })],
     827: ['雲海の星綿', heal('雲海の子守唄', 1.18, 23, { barrier: true, rally: true })],
     828: ['雷帆の逆鳴', magic('雷鳴返し', 'volt', 1.77, 23, { all: true, pierce: .4, effect: 'paralysis', rate: .55 })],
@@ -11037,7 +11037,7 @@ Seimyaku.alternateForms = {
       ],
     },
     825: {
-      palette: [null,"#191c29","#a3afbd","#4d4459","#736e81","#abdfc5","#c8ecca","#2d2234","#464345","#85633e","#f0f6d4","#cfa159","#6c8383","#ffe6a4","#1a1c38","#87d6a4","#b2adb3","#d6c7c8"],
+      palette: [null,"#191c29","#a3afbd","#4d4459","#736e81","#abdfc5","#c8ecca","#2d2234","#464345","#465f81","#f0f6d4","#76abd3","#6c8383","#d7f7fb","#1a1c38","#87d6a4","#b2adb3","#d6c7c8"],
       rows: [
         '.......1....121',
         '......121...1321',
@@ -14343,7 +14343,7 @@ Seimyaku.recipePortraits = {
   },
   // 天嵐鳥シエラネ
   825: {
-    palette: [null,"#191c29","#4d4459","#736e81","#6c8383","#2d2234","#464345","#1a1c38","#abdfc5","#85633e","#cfa159","#b2adb3","#c8ecca","#a3afbd","#f0f6d4","#ffe6a4","#d6c7c8"],
+    palette: [null,"#191c29","#4d4459","#736e81","#6c8383","#2d2234","#464345","#1a1c38","#abdfc5","#465f81","#76abd3","#b2adb3","#c8ecca","#a3afbd","#f0f6d4","#d7f7fb","#d6c7c8"],
     rows: [
       "",
       "",

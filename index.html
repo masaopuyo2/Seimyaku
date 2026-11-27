@@ -1917,6 +1917,18 @@ summary { cursor: pointer; }
     RECIPE_BY_PAIR.set(pairKey(a, b), entry.id);
   }
 
+  const fallenAngel = SPECIES.length;
+  const fallenAngelParents = [801, 834];
+  addHighRankSpecies({
+    id: fallenAngel, template: 834, rank: STAR_RANK, size: 1,
+    name: '堕天魔姫セラノワ', element: 'shade', resistance: 'dawn', tactic: 'assault',
+    traits: ['ai2', 'ward'], scout: false, specialOnly: true,
+    desc: '極光天と宵月魔后の血を継ぐ堕天の姫。砕けた光輪を戴き、黒い翼から星を断つ刃を放つ。',
+  });
+  RECIPES.push([...fallenAngelParents, fallenAngel]);
+  SPECIAL_RESULTS.add(fallenAngel);
+  RECIPE_BY_PAIR.set(pairKey(...fallenAngelParents), fallenAngel);
+
   // Keep the retired observatory paths in their original ID slots for old saves.
   for (const [step, balanceId, name, desc, theme, element, forms, boss] of extraDexRoutes) {
     const id = DUNGEONS.length;
@@ -2100,6 +2112,7 @@ summary { cursor: pointer; }
     [deepCrystalDragon]: ['深晶の竜盾', shield('深晶の竜壁', 20, { cleanse: true })],
     [thunderCrownBird]: ['雷冠の奥義', physical('雷冠落とし', 'volt', 2.24, 24, { pierce: .58 })],
     [jadeRingRam]: ['翠環の恵み', heal('翠環の芽吹き', 1.13, 22, { rally: true })],
+    [fallenAngel]: ['堕星の黒翼', magic('落星の黒刃', 'shade', 2.05, 24, { drain: .3 })],
   };
 
   function giveSpecialSkill(id, native, previousSpecialSkill) {
@@ -8602,11 +8615,31 @@ Seimyaku.alternateForms = {
   const antler = ['...nt','...tn','t.ntn','ntntn','.nttn','.ntnn','..ntnn','...nnn'];
   const dress = ['....sspp','..vvcsspccvv','.vcccvvvcccdv','vcccvcvcccccdd','.ddccvvccvddd','...ccccccdd','...ddvVVvdd','...cccccddd','..ccvccccddd','.ccvvccccvcdd','.cvvccddccvvdd','cvvccdddcccvvdd','.vvccdd..ccvvd'];
   const coat = ['....sspp','..vvccspcccvv','.vcccvcvccccdd','cccvcvvcccvccdd','.ddccvcccvcddd','...ccvcccdd','...ddvVVvdd','...ccccccdd','..ccccddccdd','.ccccdd.cccdd','.cccdd..cccddd','..ddd....dddd'];
-  const boots = ['..cc....dd','..cc....cd','.dcc...cdd','.cvv...cdd','.ccd...ddd','.dd.....ddd','ddd.....dddd'];
-  const floatingFeet = ['..ss...ps','..ss..pss','..ps..ssp','...ps.ss','...pssp','....pp','....p'];
+  // The near boot plants forward and the far boot angles out at the ankle.
+  const boots = [
+    '..cc....dd',
+    '..cc....cd',
+    '.cvc...cvd',
+    '.cvc...cvd',
+    '.vcd....cvdd',
+    'cvcd....dddd',
+    'dddd',
+  ];
+  // Leave room for the outline between the extended leg and the tucked foot.
+  const floatingFeet = ['..ss...pss','..ss...pss','..ss...ps','.ssp....ps','.spp....pp','spp','.pp'];
   const hand = ['..cc','.cvc','cdd.','ss..','ps..'];
-  const feather = ['.......W','......WW','.....WWW','....WWWW','...WWWWVV','..WWWWWVVV','..WWWWVVVVV','.WWWWVVVWWVV','.WWWVVVWWVVV','WWWWVVWWVVVV','WWWVVWWVVVV','VWWVVWVVVV','VVWVVVVVV','.VVVVV.V','..VVV','...VV'];
-  const bat = ['.......n','......nt','.....nVVn','....nVVVn','...nVVVvVn','..nVVVvvVVn','.nVVVvvVVVVn','.nVVvvnVVvvvn','nVVvvnVVvvvvn','nVVvnVVvvnnn','nVvnvvvnn','nvnvvnn.n','nn.vv...n','n...n'];
+  const feather = [
+    '.......WW','......WWWW','.....WWWWVWW','....WWWWVVWWWW',
+    '...WWWWVVWWVVVV','..WWWWWVVVWWVVv','..WWWWVVVVVWWVv','.WWWWVVVWWVVVv',
+    '.WWWVVVWWVVV','WWWWVVWWVVVV','WWWVVWWVVVV','VWWVVWVVVV',
+    'VVWVVVVVV','.VVVVV.V','..VVV','...VV',
+  ];
+  const bat = [
+    '.......n','......nt','.....nVVntn','....nVVVvVtnn',
+    '...nVVVvVVVVtnn','..nVVVvvVVvvVtnn','.nVVVvvVVVvvvnnn','.nVVvvnVVvvvnn',
+    'nVVvvnVVvvvvn','nVVvnVVvvnnn','nVvnvvvnn','nvnvvnn.n',
+    'nn.vv...n','n...n',
+  ];
   const cape = ['..dd','.cddd','.ccdd','ccvcdd','ccccdd','ccccddd','cccdddd','ccdd.dd','cd...dd','d......'];
   const equipment = {
     orb: ['.vv','vWVV','vVVv','.vv'],
@@ -8716,6 +8749,32 @@ Seimyaku.alternateForms = {
     '.nVVvnVVVvvnnVVvvnn','.nVvnVVVvvvVnnVvvnnn','.nvnnVVvnnnvvnnVvvnn',
     '.nn.nvvn...nnvnnvvn','..n.nvn......nnnvn','....nn.........nn'
   ];
+  // The low tier reaches back to the same shoulder girdle from farther out.
+  const lowerFeather = [
+    '.......WW','......WWWWWW','.....WWWWVWWWWWWW',
+    '....WWWWVVWWWWWVVWW','...WWWWVVWWVVVWWWVVV','..WWWWWVVVWWVVWWVVVv',
+    '..WWWWVVVVVWWVVVVVv','.WWWWVVVWWVVVVv',
+    ...feather.slice(8),
+  ];
+  const lowerBat = [
+    '.......n','......ntnn','.....nVVnVtnnnnn',
+    '....nVVVvVVVvvVtnnn','...nVVVvVVVVvvvVVtnn','..nVVVvvVVvvVvvvVvnn',
+    '.nVVVvvVVVvvvnvvvnn','.nVVvvnVVvvvnnnvnn',
+    ...bat.slice(8),
+  ];
+  // The high pair folds back toward the shoulder beneath the middle pair.
+  const highFeather = [
+    ...openFeather.slice(0,15),
+    '..........VVWWWVVVWWV','............VVVV.VVWWV','.................vVWWWV',
+    '..................vVWWWV','...................vVWWWV','....................vVVVVv',
+    '.....................vVVv',
+  ];
+  const highBat = [
+    ...openBat.slice(0,13),
+    '.nn.nvvn...nnvnnvvvtn','..n.nvn......nnnVVvvtn','....nn.........nnVVvtn',
+    '................nVVVvtn','.................nVVVvtn','..................nnVVvtn',
+    '....................nVVvtn','.....................nnvvn','.......................nnn',
+  ];
   const train = ['...cv','..ccvd','..cvcd','.cvccd','.cvccd','.cvccd','cvccd','cvccd','cvcd','vcd','vd','d'];
 
   function kinSprite(ctx, def, width, height, grade) {
@@ -8731,13 +8790,18 @@ Seimyaku.alternateForms = {
     } else if (grade === 2) {
       pair(flight,22,5);
     } else {
-      pair(wing,22,13);
-      pair(flight,27,-4);
+      pair(angel ? lowerFeather : lowerBat,22,13);
+      pair(angel ? highFeather : highBat,27,-4);
       pair(flight,23,4);
       pair(train,11,18,costume);
     }
     if(!angel && design%4===1) draw(cape,-8,16);
-    draw(angel || (girl && design%3===0)?floatingFeet:boots,-5,24);
+    if (angel || (girl && design % 3 === 0)) {
+      const mirrorFeet = design % 2 === 1;
+      draw(floatingFeet, mirrorFeet ? 5 : -5, 24, p, mirrorFeet);
+    } else {
+      draw(boots,-5,24);
+    }
     draw(girl?dress:coat,-7,12,costume);
     draw(hand,-10,15);
     const gear = !angel || person%4!==0 ? weapons[girl?0:1][design] : null;
@@ -8754,7 +8818,6 @@ Seimyaku.alternateForms = {
     }
   }
   Seimyaku.kinSprite = kinSprite;
-  Seimyaku.kinArtParts = {kinModel,drawKinHead,stamp};
 })();
 
 (() => {
@@ -8769,6 +8832,63 @@ Seimyaku.alternateForms = {
   ]);
   Seimyaku.uniqueSpritePainters = new Map();
   Seimyaku.lateRankSprites = {
+    857: { // 堕天魔姫セラノワ
+      palette: [null, '#1b1424', '#513451', '#785355', '#34223c', '#f2c26c', '#d69a51', '#14101e', '#9e6c42', '#28192d', '#181320', '#392540', '#7f5388', '#634371', '#745081', '#9b6aa5', '#4e3357', '#a473ab', '#583b43', '#471d37', '#d7a575', '#f5c890', '#b68360', '#ffea9e', '#edb756', '#ffd577', '#865b52', '#ffe4cd', '#996730', '#909090', '#efb8a7', '#ffffff', '#c84657', '#855d68', '#702849', '#897c9b', '#752e51', '#6c607a', '#4a405d', '#a897b2', '#c78c8e', '#c5b1ce', '#ffe1c3', '#f2e9dc', '#ddd0e6', '#f1b8a4', '#fff8ea', '#f2e4f1', '#a74468', '#ffe09a', '#c190bc', '#b9a8c2'],
+      rows: [
+        '............................................................',
+        '............................1111............................',
+        '..........................1123341...........................',
+        '.......................11123556641..........................',
+        '.....................1144126344641..........................',
+        '...............77...14356211118211..........................',
+        '.............779A7.1465882114141141.........................',
+        '............7ABCD91466411114E11.12E1.7777...................',
+        '...........79DFFCG136122114EE11111EE1AGGA7..................',
+        '.........77ADFFCDB1468841EHHE283412E47GFCB7.................',
+        '.......77AGDCFCD9A77IIJ7ADCBIKLMI9DB77AGFC977...............',
+        '......7A9DFCCCDBB97.7777ABDBMNOPNMB97.79CFDBA777............',
+        '......7GCFDGCCGBDA7....7QIBBMPPPPNIA7.79CDDFCDBA77..........',
+        '......7999GCCDBBD97...7IPKBMPPPKKPM7..7BCB9BDFFDB977........',
+        '......7AGGFCDCABDBA7.7QLPNPPPPPRRPPI779DBGG9B9DCFCDB7.......',
+        '.....79DCCFGDDA9GD97.7IQPPKOLSATRNKQ77GDAGDGCDBBBDFFG7......',
+        '....7BCCGFDAG9GBBDG977AKPKPNPUVWRAQI7ADGA9CBCFFFDGGGFD7.....',
+        '...7BFC9CD9BA9DG9GDG97QKMPMLKRRRR9I7AGGA99DDGFFFFFFGGFG7....',
+        '...7BDBBB9GB9GGD9ABDG9IJIQIMMARRXMIAGGA9DCBDBFFFFDBGAGFB7...',
+        '....7AGG9GG9DGBG9G99GBQMMQJIMAUASP9GGAADCCGGGCFFDA777AGC97..',
+        '....7GCGGCBBDBA9AGBG938248MIQIYJMLQ99BBCCCCDDGFFB7...77GB7..',
+        '...7GCDGCGADG9AAA99BB832E626223YIQ82BCCCFFFFDGFDA7.....7A7..',
+        '..7BCCGDCBABA9ZBAAA9334E88434283a2552CFCGDCFCGCG7.......7...',
+        '.7ADCDADGDGA91231B214EEE2234423a334634EB779DFGCG7...........',
+        '.7BCDGb9cdDD1e111112EEE24484228E441411G7..77GCCB7...........',
+        '.7BDAZdbfdd1ege844EEEE44444422222413E2141..7AGCA7...........',
+        '.79AIhffiid1jgg6224E2441144222EE3215HE12E...79D97...........',
+        '..77ZklfldddEej8E22284411444232222132E122E...7G7............',
+        '..79ikiflddZl23824224114442E2882634144212E...797............',
+        '..7clkdffddikDC44411142224222EE88611H2861.....7.............',
+        '..7dkfZdZhdkdGCBGCB722442885588443E1EE13E...................',
+        '..7dkZfffldhcCDABD972411424EE44mm3614212411.................',
+        '..7fdckilfifBFB77B7.4114m4EEE44mm412EEH1jge1...11...........',
+        '..7ZGIlihdkZAC97.7.414amm2E2244mm41HE388eje11.1H1...........',
+        '..7B7biiidlc797...14mamm422244mmaE12E4863j2111E1............',
+        '...77flkbbhB77..14mmamm4488444mm422113213e141681............',
+        '...7AfkiAbZ7...1mmma1m433322ammm1422111111noHE1.............',
+        '....7dkZ77B7..14mma14a44E22aamm1144361..1n81op1.............',
+        '....7Dlc7.7...1mmm411433E4aammm111433411n8142oH1............',
+        '....7bfA7....14mma1112E884aamm4114883411111142oE1...........',
+        '....7DZ7......114m4142E24144mm4111428841...1142HE1..........',
+        '.....7A7.......144114EE41141ma41.1422341....1142HE1.........',
+        '......7.........1114E8E1..11a41...124441.....1142H1.........',
+        '.................138E31....1141...1143841......14E1.........',
+        '.................122281.....11....1288241.......12E1........',
+        '................114EE11...........1444EEE1........11........',
+        '...............112HHE41...........1444EEE21.................',
+        '...............1122241............114114441.................',
+        '................11111..............1111111..................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+      ],
+    },
     854: { // 深晶竜ヴェルナード
       palette: [null, '#1a1d43', '#e3ded6', '#5482a4', '#b0a39f', '#454968', '#c9e3e5', '#335380', '#757387', '#8a91a7', '#2c3b68', '#c0bdbe', '#81bbca', '#4e668e', '#2e3054', '#97b5c6', '#181520', '#ffce74', '#111222', '#e4e8dc'],
       rows: [
@@ -9790,118 +9910,118 @@ Seimyaku.alternateForms = {
         ''
       ],
     },
-    797: {
-      palette: [null, '#1a1622', '#2b2448', '#362c43', '#3a6992', '#3b3346', '#554460', '#624c76', '#67519d', '#68a3bf', '#705a82', '#76617c', '#776584', '#8c729e', '#92809d', '#95564f', '#a29ab3', '#aa92bc', '#b690e0', '#c0a5cd', '#c24c7b', '#c2abc0', '#c5a3b7', '#d09cac', '#ded9e8', '#e5917b', '#eba9ba', '#f6def8', '#f6e3cd', '#f8d3c8', '#f9d3d4', '#ffe4cd', '#fff7e9', '#fff9ed'],
+    797: { // 冥冠魔ゼルフィア
+      palette: [null, '#1a1622', '#2b2448', '#362c43', '#3a6992', '#3b3346', '#554460', '#624c76', '#67519d', '#68a3bf', '#705a82', '#76617c', '#776584', '#8c729e', '#92809d', '#95564f', '#a29ab3', '#aa92bc', '#b690e0', '#c0a5cd', '#c24c7b', '#c2abc0', '#c5a3b7', '#d09cac', '#ded9e8', '#e5917b', '#eba9ba', '#f6def8', '#f6e3cd', '#f8d3c8', '#f9d3d4', '#ffe4cd', '#fff7e9', '#fff9ed', '#d6bddc', '#a088b4', '#78638f', '#ffd1a4', '#bf6c83', '#d17972', '#e0f4fb', '#b49dc8', '#866798', '#977aaa', '#a98bba', '#5e4c6b', '#7b648a', '#4e405b', '#57445f', '#776186', '#a48caf', '#65516e'],
       rows: [
-        '',
-        '',
-        '',
-        '...................................................1',
-        '..................................................1L12',
-        '..................................................1EE12',
-        '...............................................22I1A5E12',
-        '..............................................22I21AJ5122',
-        '.............................................2111R2JJ51I2',
-        '............................................11PP2R2JJ51I2',
-        '..........................................11PPTTIR82J51I2',
-        '.......................II.1..............1PPTTT1IR82J512',
-        '.......2.............II..1C1.......1....1PPTTT12IR882J51',
-        '..1....R2...........I...15C1...111111...1PTTT1DI8882JJ51',
-        '.1L1..2R2...........I..15CC1111OOOOG111.1PTTP12III82JJ51',
-        '.1EE11IR82.........I..15CC51OOXXXXOOG1511PTTP122282DJJJ51',
-        '.15EEA1112........1I115CC551XXXXXXXXOG151FTPP1DDD22DDJJ51',
-        '..15JJEAA111......IT15CCC551XXOOXOXXVG1C1FPPP1DD1T1DDJJ51',
-        '..15JJJJEEAA111..1TP15CC5551XOXXOVVGVG1C1FFPPP11TP1ADDJ51',
-        '...15JJJJJJEAAA11TTPT15C5551OOOXOVGVVG1511FFPPPPP1DADDD51',
-        '...15JJJJJJJDDAEA1TPT1155551OOOVVVV11151551FFPPP1DDDADD51',
-        '...15JJJJDDDDDDADD1T1111111GOOV11WVVK11551111FF1DADDDAD51',
-        '...15JJDDDDDDADDDDD1AAA11GOXOOVVKVVVN1551...1115DADD11551',
-        '..15JJJDDDDAADDDDDADDA511GOXOGVQVVVN1.151.....11555D1.151',
-        '.15JJJDDDAADDDDDAADDDD511GOXGGVVVNN1...1..1.....11551..1',
-        '.15JJDDAADDDDDAADDDDD5511GOOG11GN11.....11E1......151',
-        '.15DDDADDDD55ADDDDD1551.1GOOOG11171111.1U11U1......1',
-        '.15DA111DD5A11DDD51U11U1.1GOOG166H117111UNUU11',
-        '.1551..1D551..15551UUNU1111GGG1HH1MM11111NU1151',
-        '.151....151..1155111UN111661111H1BMS16611N711J51',
-        '..1......1..15151JJ17N116331MB161BM116366111EJJ51',
-        '...........15JJ1JJJJ11363312116191111163331JJEJJ51',
-        '...........15JEJJJJAD163312I2619S4173163331JJJEJ51',
-        '..........15JJEJDDADD16311IR24H14117331631ADDJEJJ51',
-        '..........15JEJDDADDD51112I882H61331336111DADDJEJ51',
-        '.........15JJEJDDADD5551.12I2H66633313366H1ADDJEJJ51',
-        '.........15JEJDDAD55511..1282H66663313366H1DADDJEJ51',
-        '........15JJEJD555111...1662633H6633313366H155DJEJJ51',
-        '........15JEJD5511.....16HH6333H6633313366H1155DJEJ51',
-        '........15E1D551......166H633366H663317366H1.155D1E51',
-        '........151.151......166H66331166HH6631736H1..151.151',
-        '.........1...1.......16HH6331.1166HH331173H1...1...1',
-        '....................1116H631...1166H31..17H1',
-        '...................166611111...161111....11',
-        '...................16336331....1631',
-        '....................116331.....16361',
-        '......................111.......1631',
-        '................................1631',
-        '...............................16331',
-        '...............................1631',
-        '...............................1631',
-        '................................11'
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '...................................................1........',
+        '..................................................1L12......',
+        '..................................................1EE12.....',
+        '...............................................22I1A5E12....',
+        '..............................................22I21AJ5122...',
+        '.............................................2111R2YJ51I2...',
+        '............................................11bb2R2YJ51I2...',
+        '..........................................11bbcTIR82J51I2...',
+        '.......................II.1..............1bbTcT1IR82Y512....',
+        '.......2.............II..1C1.......1....1bbTcT12IR882J51....',
+        '..1....R2...........I...15C1...111111...1bTTc1DI8882YY51....',
+        '.1L1..2R2...........I..15CC1111OOOOG111.1bTTP12III82YJ51....',
+        '.1EE11IR82.........I..15CC51OOXXXXOOG1511bTTP122282DYJJ51...',
+        '.15EEA1112........1I115CC551XXXXXXXXOG151FTPP1DDD22DDJJ51...',
+        '..15YYEAA111......IT15CCC551XXOOXOXXVG1C1FdPP1DD1c1DDJJ51...',
+        '..15YJJYEEAA111..1TP15CC5551XOXXOVVGVG1C1FFdPP11cb1ADDJ51...',
+        '...15JJJJYYEAAA11TTPT15C5551OOOXOVGVVG1511FFdPPbb1DADDD51...',
+        '...15YJJJJJJDDAEA1TPT1155551OOOVVVV11151551FFdPP1DDDADD51...',
+        '...15YJJJZZZZDDADD1T1111111GOOV11WVVK11551111FF1aADDDAD51...',
+        '...15YJZZZaaDADDDaD1AAA11GOXOOVVKVVVN155111nn115DADD11551...',
+        '..15YYJZaaDAADDaaDADDA511GOXOGVQVVVN1.151onnnnp1555D1.151...',
+        '.15YYJZZDAADDaaDAADDDD511GOXGGVVVNN1..1onnnnpp1111551..1....',
+        '.15JJZZAADDDaDAADDDDDnoo1GOOG11GN11.11nn1mE111....151.......',
+        '.15aZZADDDa55ADDDDD1pn1n1GOOOG11171111n1U11U1......1........',
+        '.15DA111DD5A11DDDm1U11U1n1GOOG166H117111UNUU11..............',
+        '.1551..1D551..15551UUNU1111GGG1HH1MM11111NU1151.............',
+        '.151....151..1155111UN111661111H1BMS16611N711J51............',
+        '..1......1..15151YY17N116331MB161fM116366111EJJ51...........',
+        '...........15YY1YYJJ11363312116191111163331JJEJJ51..........',
+        '...........15YEJYJJAD163312I2619e4173163331JJJEJ51..........',
+        '..........15YYEYZZADD16311IR24H14117331631ADDJEYJ51.........',
+        '..........15YEJDZADDDj11l2I882H61331336111DADDJEJ51.........',
+        '.........15YYEYZDADDll55512I2H66633313366H1ADDJEYJ51........',
+        '.........15YEJDZAD55555551282H66663313366H1DADDJEJ51........',
+        '........15YYEYZ555111111166g633H6633313366H155DJEYJ51.......',
+        '........15YEJD5511.....16Hh6333H6633313366H1155DJEJ51.......',
+        '........15E1D551......166H633366H663317366H1.155D1E51.......',
+        '........151.151......166i66331166HH6631736H1..151.151.......',
+        '.........1...1.......16HH6331.1166HH331173H1...1...1........',
+        '....................1116H631...1166H31..17H1................',
+        '....................1B6631......16B631...11.................',
+        '....................166631.......1C6631.....................',
+        '...................166331.........16631.....................',
+        '..................1B6631..........16331.....................',
+        '..................16631...........16331.....................',
+        '..................1111............16B6631...................',
+        '..................................16666331..................',
+        '...................................111111...................',
+        '............................................................',
       ],
     },
-    798: {
-      palette: [null, '#1e1622', '#3a9276', '#3d2f49', '#54ada5', '#5f452f', '#837590', '#8e6853', '#95714f', '#9c7a4f', '#b3a89e', '#b4a99d', '#c2a269', '#c6a365', '#c9bbcb', '#c9c4d6', '#d0a19c', '#d19640', '#d99638', '#e1ad63', '#e5c27b', '#eacd95', '#ebb6a9', '#ebc675', '#eecd86', '#efd090', '#efd386', '#f8dc7d', '#f9e6d3', '#f9f3f0', '#f9f4f0', '#fbf5e3', '#fcf6ec', '#fefcfb', '#ffd675', '#ffe4cd', '#fff0bd', '#fff4c0', '#fff5b0', '#fff7e9', '#fff9ed'],
+    798: { // 光翼天アウレリア
+      palette: [null, '#1e1622', '#3a9276', '#3d2f49', '#54ada5', '#5f452f', '#837590', '#8e6853', '#95714f', '#9c7a4f', '#b3a89e', '#b4a99d', '#c2a269', '#c6a365', '#c9bbcb', '#c9c4d6', '#d0a19c', '#d19640', '#d99638', '#e1ad63', '#e5c27b', '#eacd95', '#ebb6a9', '#ebc675', '#eecd86', '#efd090', '#efd386', '#f8dc7d', '#f9e6d3', '#f9f3f0', '#f9f4f0', '#fbf5e3', '#fcf6ec', '#fefcfb', '#ffd675', '#ffe4cd', '#fff0bd', '#fff4c0', '#fff5b0', '#fff7e9', '#fff9ed', '#e7e4eb', '#a89fb0', '#e8e5ef', '#aaa1b1', '#886048', '#e4ddce', '#887888', '#e2cba9', '#bdb1ad', '#d3c9c3', '#f8e4bb', '#c6babc', '#867b83', '#b38b5d', '#e3cb98', '#b7a193', '#827586', '#e8c582', '#bb8259', '#855f55', '#f2dfb8'],
       rows: [
-        '',
-        '',
-        '..............................55',
-        '.............................5YY55555...............1',
-        '............................5Yb5bbbbb55............1X1',
-        '...........................5Yb5355555YY53333333...1XX1',
-        '...........................35II5J33335YH5JJJJJ3a.1XXX1',
-        '......................333JJJJ55I55555.5OH5..33Ja1XXXE1',
-        '.....................33JJ333...5IIIII5IH5....JJ1XXXXE1.a',
-        '.............a.....33JJ33.......55555I55......1XXXXE1..a',
-        '.............a....33J333.............5.......1XXXXXX1JJaJJ',
-        '...........JJaJJ333J33.....................11XXXXXXE1..a',
-        '.............a.33JJ33...........11111.....1XXXXEXXE1...a',
-        '.............a33J33...........11RRRRR11.11XXXXEEXXE1',
-        '..............3733...........1RRccccRRD1XXXXXXEXXE173',
-        '........a....3373...........1RRccccccRRC1XXXXEXXXX137',
-        '.11.....a...33733...........1RccccRRRccQC1EEXXEXXXE173...11',
-        '1XX111JJaJJ.3733...........1DRccRRccRRcSC1EEXXXXEXE137111VV1',
-        '1EXXXX111..3373............1DRccDRccZZDSC1XXEXXXEE1111VVVF1',
-        '.1EXXXXXX111733............1DRcDRRZZZDZSC1EXXXEXX11JVVFFF1',
-        '.1EXXXXXXXXX1111...........1DRcRRZ11ZZ111XXEXXX11VJFFF661',
-        '..1EXXEXXXXXXXXX111........1DRcRRZZ4dZZ41XXEXX16FJFF6611',
-        '..1XXXXEXXXXXXXXXXX11......1DRcRDZMZZZZG1XXEXX16JF6611',
-        '...1EXXXEEXXXXXXXXXXX11....1DRRDDZZZZZG1EXXE1116J111',
-        '..1EXXXXJEEXXXXEEXXXXXX1...1DRRD11DGGG1E1111KK8J111',
-        '...1EXXXXJJEEXXXEEXXXX11...1DRcD1G111111SS1K88J1111',
-        '....1EEXXXXJXEXXXEEXX1LP1..1DRRD1eTTP111SWS181111X1',
-        '....1XXEXXXXJXEXXXXX1LLT91191DRD1PPT11N1SGG1111.1E1',
-        '....11EXXEEXXJJEEXXX1LUT9191T1DD3111NN881G111X1..1',
-        '...1XX1EEXXEEXXJEEX1LUUT911TAA13J3NN888111111E1',
-        '...1XXE1EEEXEEXXJEE1LUUA911TA11Ja3888111UB1..1',
-        '...1XE111111EEEXXE1LUUBA91T11N3J773111A1UB1',
-        '...1E1.1XXEE111EEE1LUUB1111NN883J3121AA1UB1',
-        '....1..1XE111XX1111LUU1ZZ1N8881373T1A1AU111',
-        '.......1E1..1XE1.1LU11SdZ18811PP3TTAAA1BUUL1',
-        '........1...1E1..111K1GGZ111PTPTTTTAA1ABUUL1',
-        '.............1..11KK881G11TTPTAAPTTAAA1BBUUL1',
-        '..............11KK88811111TPPTAAAPTTAAA1BUUL1',
-        '............11KK888119111TTPTAAATTPTTAA1BUUL1',
-        '..........11KK88811B911TTPTTAA11TTPPTTA11BUL1',
-        '........11KK88811LB91.1TPPTAA1.11TTPPAA1U11L1',
-        '......11KK88811.1L91...1TPTA1...11TTPA1BBUU11',
-        '.....1KK88811....11...1111111.....1111ABBBB1',
-        '.....1K8811.......1111UTTAA1........111UBBB1',
-        '......111........1881UBAAA1............1UBB1',
-        '.................188K1B111............1UBBB1',
-        '..................11111...............111BB1',
-        '......................................18K11',
-        '......................................188KK1',
-        '......................................11111',
-        '.......................................111',
-        ''
+        '............................................................',
+        '............................................................',
+        '..............................55............................',
+        '.............................5YY55555...............1.......',
+        '............................5Yb5bbbbb55............1X1......',
+        '...........................5Yb5355555YY53333333...1XX1......',
+        '...........................35II5J33335YH5JJJJJ3a.1XXX1......',
+        '......................333JJJJ55I55555.5OH5..33Ja1XXXE1......',
+        '.....................33JJ333...5IIIII5IH5....JJ1XXXXE1.a....',
+        '.............a.....33JJ33.......55555I55......1XXXXE1..a....',
+        '.............a....33J333.............5.......1XXXXhh1JJaJJ..',
+        '...........JJaJJ333J33.....................11XXXXhhE1..a....',
+        '.............a.33JJ33...........11111.....1XXXXEXhE1...a....',
+        '.............a33J33...........11RRRRR11.11XXXXEEhhE1........',
+        '..............3733...........1RRccccRRD1XXXXXXEhhi173.......',
+        '........a....3373...........1RRccccccRRC1XXXXEhhhh137.......',
+        '.11.....a...33733...........1RccccRRRccQC1EEXhEhhhE173...11.',
+        '1XX111JJaJJ.3733...........1DRccRRccRRcSC1EEXhhhiXE137111zV1',
+        '1EXXXX111..3373............1DRccDRccZZDSC1XXEhhhiE1111VzzF1.',
+        '.1EXXXXXX111733111.........1DRcDRRZZZDZSC1EhhhiXX11JVkzzF1..',
+        '.1EXXXXXXXXXfffff11111.....1DRcRRZ11ZZ111XhEhhX11VJFzzll1...',
+        '..1EXXEXXXXXfffffffff111...1DRcRRZZ4dZZ41XhEhX16FJzzll11....',
+        '..1XXXfEXXXXXffEfffffff111.1DRcRDZMZZZZG1XhEXX16Jkll11......',
+        '...1EXffEEXXXfffEEEffffff111DRRDDZZZZZG1EXXi11133111........',
+        '..1EXXXfJEEffXfTTEEEEEfffff1DRRD11DGGG1E1111KK88w11.........',
+        '...1EXXffJJEEffffTTTTE11fff1DRcD1G111111SS1K88J8xw3.........',
+        '....1EEXfffJfEffffggg1LP9aE1DRRD1emmm111SWS18111yxwx3.......',
+        '....1XXgffffJfEfffff1L9atu191DRD1mmm11N1SGG1111.13ywxx3.....',
+        '....11EXXggffJJEEfff19atuv91T1DD3111NN881G111X1..1.y33......',
+        '...1XX1EEXXggffJEEf1Ltuv311TAA13J3NN888111111E1.....3.......',
+        '...1XXE1EEEXggXXJgE1puvA911TA11Ja3888111UB1..1..............',
+        '...1XE111111EEEXXg1pppBA91T11N3J773111A1UB1.................',
+        '...1E1.1XXEE111EEE1pppB1111NN883J3121AA1UB1.................',
+        '....1..1XE111XX1111LpU1ZZ1N8881373T1A1Ao111.................',
+        '.......1E1..1XE1.1LU11SdZ18811PP3TTAAA1oooL1................',
+        '........1...1E1..111K1GGZ111PTPTTTTAA1ABooL1................',
+        '.............1..11KKjj1G11TTPTAAPTTAAA1BoooL1...............',
+        '..............11KKjj811111TPPTnnnPTTAAA1oooL1...............',
+        '............11KKjj8119111TTPnnnnnnPTTAA1oooL1...............',
+        '..........11KKjj811B911TTPTTAA11nnPPnTA11BUL1...............',
+        '........11KKjjj11LB91.1TPPTAA1.11TnPPnA1U11L1...............',
+        '......11KKjjj11.1L91...1TPTA1...11TTPA1BBUU11...............',
+        '.....1KKjjj11....11...1111111.....1111ABBBB1................',
+        '.....1Kjj11..........11Vr1...........11Vr11.................',
+        '......111.........111sqr1.............1Vrr1.................',
+        '.................1sPsr1...............1sqr1.................',
+        '..................1rrr1...............1Prr1.................',
+        '...................111.................1ssr1................',
+        '.......................................1Pqqsr1..............',
+        '........................................11111...............',
+        '............................................................',
+        '............................................................',
       ],
     },
     799: {
@@ -9998,61 +10118,61 @@ Seimyaku.alternateForms = {
         ''
       ],
     },
-    801: {
-      palette: [null, '#181523', '#212a4a', '#365f96', '#4f6cb2', '#5567af', '#612d44', '#6497c3', '#78c8c8', '#7f78c8', '#994b6b', '#9cd7d7', '#9ebcfc', '#a04b6a', '#a19cd7', '#ada9dc', '#b3ad9e', '#c6a365', '#d399c4', '#d63b87', '#d99638', '#e878ac', '#ebc675', '#ed92bd', '#eea6de', '#efd090', '#f4e7ff', '#f8c8e2', '#f8dc7d', '#f9d3ee', '#f9f0f5', '#f9f3f0', '#fbe3f0', '#fcecf6', '#fefbfe', '#ffd675', '#ffe4cd', '#fff2c1', '#fff4c0', '#fff5b0', '#fff7e9'],
+    801: { // 極光天セラフィネ
+      palette: [null, '#181523', '#212a4a', '#365f96', '#4f6cb2', '#5567af', '#612d44', '#6497c3', '#78c8c8', '#7f78c8', '#994b6b', '#9cd7d7', '#9ebcfc', '#a04b6a', '#a19cd7', '#ada9dc', '#b3ad9e', '#c6a365', '#d399c4', '#d63b87', '#d99638', '#e878ac', '#ebc675', '#ed92bd', '#eea6de', '#efd090', '#f4e7ff', '#f8c8e2', '#f8dc7d', '#f9d3ee', '#f9f0f5', '#f9f3f0', '#fbe3f0', '#fcecf6', '#fefbfe', '#ffd675', '#ffe4cd', '#fff2c1', '#fff4c0', '#fff5b0', '#fff7e9', '#e5e1f2', '#9b98cb', '#d9e8ef', '#d8e5ec', '#ede0f4', '#f2acc8', '#8192c4', '#696fb1', '#be789d', '#cfbec7', '#d0bec8', '#ead6d0', '#9c8299', '#eddfeb', '#e9c78c', '#c0b8ca', '#9c8fa8', '#e2dcf4', '#28243e', '#b8b5dd', '#f6efff'],
       rows: [
-        '',
-        '',
-        '',
-        '............................6',
-        '...........................6c6....2',
-        '.......................2226ZcZ66666C62',
-        '....1................22CC6Zc66ccccc6c6C22',
-        '...1Y1...........Q..2CC26ZK6..66666ZcZ6CCC2Q2',
-        '...1YY1..........Q2CC2...6KK66.....66ZK622CQ22',
-        '...1YYY1.......CCQCC......66KK66666..6ZJ6CCQCC2',
-        '...1EYYY1.....21CQ2.........66KcccK66KK6...Q2C22',
-        '...1EYYYY1...21W1Q............66666KK66....Q22C2',
-        '....1EYYYY1.221WF1.................66........22C2',
-        '....1YYYYYY12C1WF1..............11............2C22',
-        '....1EYYYYYY111FWF1..........111SS111.........22C22',
-        '.....1EYYEYYYY11WF1.........1SSdddSSH1.........22C22Q',
-        '.....1EYYEEYYYY1FWF1.......1SddddddSSH1.........22C2Q',
-        '......1EYYEYYYYY1WF1......1SdddSSddddSH1.........2CCQCC11',
-        '......1YYYYEYYYY1FWF1.11.1HSddSddSSddaH1..........25111YY1',
-        '.....1EYYYEYYEEYY1WF11LM11HSdSSSdSaaHaH1.........111YYYYB1',
-        '.....1EYEYYYYEEYY111LLAA11HSHSSSaaaHaaH1..Q...111YYYYYYB1',
-        '......1EEYYYEYYE11LLAAA1.1HSdSSa11aa111..CQC11YYYYYYYYYB1',
-        '.......1YYEYYYE1QLAAA11..1HSdSSaa4eaa41111Q1YYYYYYYBYYB1',
-        '......1EYYYYYE1CQCA1111..1HSdSHaOaaaaI1Y11LL11YYYYBYYYY1',
-        '......1EYYEYYE1LQ11LAL1..1HSSHHaaaaaI111LLRLLL21BBYYYB12',
-        '.......1EEYYYEY11EE1LA1..1HSSH11HIII11MLRRRLL2Q21YYYYYB1',
-        '.....2.11YYEEEYYEEE1L111111HSSH111111MbRLL7R2CQ521YYYQ12',
-        '.....211EYEE1EEYYEEQ1TT1MM11HSH1VV1M1MbLLL72C5Q552YBCQC2',
-        '.....211EE111EYYEECQCXT1bM111HH1PP111MbLRR7C55Q552BYYQ52',
-        '.....21Y1111EYEE11YQIIT111VV1111P1AM1MbL7R2C55Q5552B1152',
-        '.....21E1C11EE11YYY11I1M1VGG1MA1V1AM1MbL72C555Q55552YY12',
-        '.....251551Y1111YYE1N1LA1GG1V11V17111AMA2QQQQQQQQQQQ2Y1',
-        '.....255551E1YY1YE1NU1LAM11GVVV17b311AMAL255CCQ55552BY1',
-        '......255511YYY1E11NUU1MA11DPD3P1311D1MALL2555Q555251B1',
-        '......25551YYYEY1Y1NUU1MA11VV73PV1GG11ALALL255Q55215512',
-        '......2551YYYEYYY1NUU91MAM1VVPPVVVGGG11ALLL255Q55211552',
-        '......2551YYYEYYE1NUU991MA1VPVPVVVVGG1G1ALLL25Q521Y1552',
-        '......251YYYEYYE1NUU99D1MA1VPVGGPVVGGG181ALLA252BYYY152',
-        '......251YYEEYEY1NUU99D111PPVGGGPVVGGG1881AA1Y2YBBYY152',
-        '......251YE1YEYY1NUU9D11VVPVGGGVVPVVGG1D8U111YYBY1BY1552',
-        '.....2551E11EEYY1NU9D11VVPVVGG11VVPPVVG1D8UN1YYBB11B1552',
-        '.....25551..1EYE1N9D1.1VPPVGG1.11VVPPGG11D8N1BYB12.12552',
-        '....25555C..1EE11ND1...1VPVG1...11VVPG11.1DN11BB12...2552',
-        '....25522...211C.11.....11111....11111G1..11..11552...252',
-        '...2522....255C........1VGG1......11VGG1.......C552....222',
-        '...22......25C.........1VG1........1VGG1........CC2......2',
-        '..2........2C.........1VGG1.......1VGGG1..........C2',
-        '...........C..........11G1........111GG1...........C',
-        '.....................1AA11........1AM11',
-        '.....................1AAM1........1AAMM1',
-        '......................111.........11111',
-        '...................................111'
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................6...............................',
+        '...........................6c6....2.........................',
+        '.......................2226ZcZ66666C62......................',
+        '....1................22CC6Zc66ccccc6c6C22...................',
+        '...1Y1...........Q..2CC26ZK6..66666ZcZ6CCC2Q2...............',
+        '...1YY1..........Q2CC2...6KK66.....66ZK622CQ22..............',
+        '...1YYY1.......CCQCC......66KK66666..6ZJ6CCQCC2.............',
+        '...1EYYY1.....21CQ2.........66KcccK66KK6...Q2C22............',
+        '...1EYYYY1...21W1Q............66666KK66....Q22C2............',
+        '....1EYYYY1.221WF1.................66........22C2...........',
+        '....1ffYYYY12C1WF1..............11............2C22..........',
+        '....1EffYYYY111FWF1..........111SS111.........22C22.........',
+        '.....1EffEYYYY11WF1.........1SSdddSSH1.........22C22Q.......',
+        '.....1EffEEYYYY1FWF1.......1SddddddSSH1.........22C2Q.......',
+        '......1EffEYYYYY1WF1......1SdddSSddddSH1.........2CCQCC11...',
+        '......1YfffEwwYY1FWF1.11.1HSddSddSSddaH1.........x25111YY1..',
+        '.....1EYffEwwEEwY1WF11LM11HSdSSSdSaaHaH1......xxx1w1YYYYB1..',
+        '.....1EYEfffyEEww111LLAA11HSHSSSaaaHaaH1..Qxxx1wwwwYYYYB1...',
+        '......1EEYffEywE11LLAAA1.1HSdSSa11aa111xxCQCwwwwwyYYYYYB1...',
+        '.......1YYgffzE1QLAAA11xx1HSdSSaa4eaa411wwQ1wwyyywYBhhB1....',
+        '......1EYYYYfE1CQCA111www1HSdSHaOaaaaI1w11LL11yzzwBhhhh1....',
+        '......1EYYgYYg1LQ11LAL1ww1HSSHHaaaaaI111LLRLLk21BBhhhB12....',
+        '.......1EgYYYgf11EE1LA1yy1HSSH11HIII11MLRRRLk2Q21hhhhhB1....',
+        '.....2.11YYgggYYEEE1L111111HSSH111111MbRLLkk2CQl21hhYQ12....',
+        '.....211EYgg1gEYYEEQ1TT1MM11HSH1VV1M1MbLLkk2C5Qll2hBCQC2....',
+        '.....211EE111EYYEECQCXT1bM111HH1PP111MbLRkkC55Qll2BYYQ52....',
+        '.....21Y1111EYEE11jQIIT111VV1111P1AM1MbL7R2C55Qlll2B1152....',
+        '.....21E1C11EE11Yjj11I1M1VGG1MA1V1AM1MbL72C555Qlll52YY12....',
+        '.....251551Y1111jjE1N1LA1Go1o11V17111AMA2QQQQQQQQQQQ2Y1.....',
+        '.....255551E1Yj1jE1NU1LAM11oooo17b311AMAn255CCQ55552BY1.....',
+        '......255511Yjj1E11NUU1MA11DPD3P1311D1MAnn2m55Q555251B1.....',
+        '......25551YYjEj1j1NUU1MA11VV73PV1GG11ALAnn2m5Q55215512.....',
+        '......2551YYjEjjj1NUU91MAM1VVPPVpVGGG11Annn2mmQ55211552.....',
+        '......2551YYjEjjE1NUU991MA1VPVPqVpppp1G1Annn2mQ521i1552.....',
+        '......251YYjEjYE1NUU99D1MA1VPqrsPVpppp181ALnA2m2BYYY152.....',
+        '......251YYEEYEY1NUU99D111qqqGrstVpppp1881AA1Y2YBBYY152.....',
+        '......251YE1YEYY1NUU9D11qqqqGGGrstVppp1D8U111YYBY1BY1552....',
+        '.....2551E11EEYY1NU9D11VqqqqGG1rstPPVpp1D8UN1YYBB11B1552....',
+        '.....25551..1EYE1N9D1.1VPqqGG1.rstVPPGp11D8N1BYB12.12552....',
+        '....25555C..1EE11ND1...1VqVG1..rt1VVPG11.1DN11BB12...2552...',
+        '....25522...211C.11.....11Xv1...r1111Xv1..11..11552...252...',
+        '...2522....255C.........1Xv1........1Xvv1......C552....222..',
+        '...22......25C.........1Xvv1........1Xvv1.......CC2......2..',
+        '..2........2C..........1uv1.........1uuv1.........C2........',
+        '...........C..........1uuv1..........1uv1..........C........',
+        '.....................1AMv1...........1MAv1..................',
+        '.....................1Av1.............1AAv1.................',
+        '......................11...............111..................',
+        '............................................................',
       ],
     },
     802: { // 宙喰獣ノクタル
@@ -10908,118 +11028,118 @@ Seimyaku.alternateForms = {
         '',
       ],
     },
-    820: {
-      palette: [null,"#191622","#c1acbd","#92819c","#705a82","#3a3346","#c1a4ce","#8c739d","#f7c7e8","#776782","#cc81bc","#bddad5","#eafff3","#829fa5","#985194","#ffe4cd","#694458","#fff7e9","#c84657","#efaba5","#ffebbf","#d29a9c","#814955","#c7a77d","#aa91bd","#a87957","#624c76","#c5a3b1","#76627b","#55455f","#352c43","#f6e3cd"],
+    820: { // 星書魔ルゼフィナ
+      palette: [null, '#191622', '#c1acbd', '#92819c', '#705a82', '#3a3346', '#c1a4ce', '#8c739d', '#f7c7e8', '#776782', '#cc81bc', '#bddad5', '#eafff3', '#829fa5', '#985194', '#ffe4cd', '#694458', '#fff7e9', '#c84657', '#efaba5', '#ffebbf', '#d29a9c', '#814955', '#c7a77d', '#aa91bd', '#a87957', '#624c76', '#c5a3b1', '#76627b', '#55455f', '#352c43', '#f6e3cd', '#d3c0dd', '#7c648e', '#a58ab3', '#f5deb0', '#fff0cb', '#eed5ad', '#b99283', '#827088', '#b29a91', '#a28b96', '#705e7c', '#b19a96', '#9e8191', '#aa9098', '#c4b3a1', '#d6b189', '#a2d9cd', '#92859c', '#a899b0', '#5e4c6b', '#7b648a', '#4e405b', '#57445f', '#776186', '#a48caf', '#65516e'],
       rows: [
-        '',
-        '',
-        '',
-        '',
-        '....................................................1',
-        '...................................................121',
-        '...................................................1331',
-        '...................................................14531',
-        '...................................................14651',
-        '..................................................146651',
-        '.................................................1466651',
-        '..............1.................................14776651',
-        '.............181..................11...........147776651',
-        '.............181......11.........1951.........14777766651',
-        '............18A81....1591..1111.11591.1......147747766651',
-        '...........188A881..11951.1BBBB1B159519111..1477747776651',
-        '............18A811.1959511BCCCCBC1595951AA1147777747766651',
-        '.............18131.15991DBBCCCCCC159951A88A177777774776651',
-        '.............11631.1591DBCCBBBBCC155951888AA14477774776651',
-        '............1566341.11DBBCCCCCCC155951A88AAE17447777477651',
-        '...........156636641.1DFBCCCCBBC15551.1AAAEE17774777477751',
-        '..........1566366641.1DFDFFFFBDBC111..11EEE157777477747751',
-        '.........1566366664411DFFDFGGFBBCBD1..15111114457747774751',
-        '.........156366664774111GFFHFFBBCBD1..1551...1145747711551',
-        '........111136774777111IFFIFJFDBBBD1...1511....1155571.151',
-        '........1KKK11747711KK1LFFHFFFDDBBD1....1131.....11551..1',
-        '.......1MKKKKK1471KKKKK1LFFLD11DD11..11..1331......151',
-        '.......1MKNNKKK11KKKNNKM1LL111BBB11.1O11.13651......1',
-        '......11MKKKKKKKPKKKKKKM111O1DBC1111Q1F11F16651',
-        '......11MKNNNKKKPKKNNNKM1RS11DBDD1TT11FLFF136651',
-        '......11MKKKKKKKPKKKKKKM1RS11DBB11TUT11LF11636651',
-        '......11MKNNKKKKPKKKNNKM111T11BD111TUT1LQ116636651',
-        '.......1MKKKKKKKPKKKKKKM11U1AV11U1.1TUU11116663651',
-        '.......1MNNNNKKKPKKKNNNM11QO1E1OQ1.111TU1O177636651',
-        '.......1MMMMMNNNP111MMMM11TTO1OTUU11QU11TO147763651',
-        '........11111MMM1FFF11111TTTOOTTUUU11QUUTTO177636651',
-        '.........15631111LLF111.1TTOTTTTTUU11QUUTTO147763651',
-        '........1566367551111..1TTTOTTUOTUUU11QUUTTO157636651',
-        '........156367551111....1TTOOTTUUOTUUU1UUTTO155763651',
-        '........15317551.......1TTTOTTUUUTOTUU1QUTTO115571351',
-        '........151.151.......1TTOOTTUUU11TOTTU1QUTO1.151.151',
-        '.........1...1........1TOOTTUUU111TTOUU11QUO1..1...1',
-        '.......................1TOTTUU1..11TOU1111QO1',
-        '........................111111...1T111TTT111',
-        '..........................1TU1....1TUTUUU1',
-        '.........................1TUU1.....1TUU11',
-        '.........................1TU1.......111',
-        '.........................1TU1',
-        '.........................1TUT1',
-        '..........................1TU1',
-        '..........................1TU1',
-        '...........................11',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '....................................................1.......',
+        '...................................................121......',
+        '...................................................1331.....',
+        '...................................................14531....',
+        '...................................................14651....',
+        '..................................................14W651....',
+        '.................................................14W6651....',
+        '..............1.................................14776651....',
+        '.............181..................11...........147776651....',
+        '.............181......11.........1951.........14777766651...',
+        '............18A81....1591..1111.11591.1......147747766651...',
+        '...........188A881..11951.1BBBB1B159519111..1477747776651...',
+        '............18A811.1959511BCCCCBC1595951AA1147777747766651..',
+        '.............18131.15991DBBCCCCCC159951A88A1777777X4776651..',
+        '.............11W31.1591DBCCBBBBCC155951888AA14477774776651..',
+        '............15WW341.11DBBCCCCCCC155951A88AAE1744777X477651..',
+        '...........15WW36W41.1DFBCCCCBBC15551.1AAAEE17774777477751..',
+        '..........15WW36W641.1DFDFFFFBDBC111..11EEE157777477747751..',
+        '.........15WW36W664411DFFDFGGFBBCBD1..15111114457X47774751..',
+        '.........15W36W664Y74111GFFHFFBBCBD1..155uttt1145747711551..',
+        '........11113WYY4Y77111IFFIFJFDBBBD1..11utttv1.1155571.151..',
+        '........1KKK11Y47711KK1LFFHFFFDDBBD1.1uutt3vs1...11551..1...',
+        '.......1MZaaaa1471KKKKK1LFFLD11DD11.111tvv331......151......',
+        '.......1MZaaaaa11bKKNNbM1LL111BBB1111O11s13651......1.......',
+        '......11MZdeaaaZlbKKKKbM111O1DBC1111Q1F11F16651.............',
+        '......11MZaafaaZPbKNNNbM1RS11DBDD1TT11FLFF136651............',
+        '......11MZakgaaZlbKKKKbM1RS11DBB11TUT11LF11636651...........',
+        '......11MZjaahiZPbKKNNbM111T11BD111TUT1LQ116636651..........',
+        '.......1MZaaaaaZlbKKKKbM11U1AV11U1s1TUU11116663651..........',
+        '.......1MZaaaaaZlbKKNNcM11QO1E1mQ11111TU1O177636651.........',
+        '.......1MMMMMNNNP111MMMM11TTO1OTUU11QU11TO147763651.........',
+        '........11111MMM1FFFTTUU1TTTOOTTUUU11QUUTTO177636651........',
+        '.........15W31111LLFTTU11TTOTTTTTUU11QUUTTO147763651........',
+        '........15WW3W755111QU11TTTOTTUOTUUU11QUUTTO15763W651.......',
+        '........15W367551111....1TTOOTTUUOTUUU1UUTTO155763651.......',
+        '........15317551.......1TTTOnTUUUTOTUU1QUTTO115571351.......',
+        '........151.151.......1TTOOoTUUU11TOTTU1QUTO1.151.151.......',
+        '.........1...1........1TOOTTUUU111TTOUU11QUO1..1...1........',
+        '.......................1TOTTUU1..11TOU1111QO1...............',
+        '.........................1OTUU1...1TTU11....................',
+        '.........................1TUU1.....1TTUUT1..................',
+        '........................1OTTU1.....1TUUU1...................',
+        '........................1TUU1.....1TTU1.....................',
+        '.......................1TUU1......1111......................',
+        '......................1OTU1.................................',
+        '.....................1TTU1..................................',
+        '.....................1111...................................',
+        '............................................................',
       ],
     },
-    821: {
-      palette: [null,"#60432e","#191622","#ffd675","#fff4c0","#fffbfa","#d99638","#c4bcca","#fff8df","#c4c8d6","#f8dc7d","#fff5b0","#c6a365","#ffe4cd","#ebc675","#976e4d","#5186b0","#fff7e9","#efaba5","#d29a9c","#fff2c1","#65c0c2","#9e794d","#fff9ed","#f9f3f0","#efd090","#152638","#385f84","#69aec6","#c3eedc","hsl(43 12% 66%)","#368496"],
+    821: { // 白環天ルキエル
+      palette: [null, '#60432e', '#191622', '#ffd675', '#fff4c0', '#fffbfa', '#d99638', '#c4bcca', '#fff8df', '#c4c8d6', '#f8dc7d', '#fff5b0', '#c6a365', '#ffe4cd', '#ebc675', '#976e4d', '#5186b0', '#fff7e9', '#efaba5', '#d29a9c', '#fff2c1', '#65c0c2', '#9e794d', '#fff9ed', '#f9f3f0', '#efd090', '#152638', '#385f84', '#69aec6', '#c3eedc', '#b3ad9e', '#368496', '#f4e9d0', '#d7e0df', '#baa37c', '#e0c895', '#e0e4e9', '#a0a3b3', '#a4a5b2', '#e2e8e8', '#e0e6e8', '#c9c5bf', '#c6beb4', '#e3d0b8', '#cbc4bd', '#8c8793', '#d4cfc3', '#fff8e3', '#a69480', '#decfba', '#252432', '#e4dfe8', '#c2baca'],
       rows: [
-        '',
-        '',
-        '',
-        '',
-        '............................111........................2',
-        '...........................13341111...................252',
-        '..........................13414333311................2552',
-        '.........................1341.11111331..............25552',
-        '..........................1661.....1361............255572',
-        '...........................11611111.1361..........2555572',
-        '...............2.............1666661661..........2555572',
-        '..............282.............11111611..........25555552',
-        '..............2892.................1..........2255555572',
-        '..............2892............22222..........2555575572',
-        '.22...........29892.........22AAAAA22......225555775572',
-        '255222.........2892........2AABBBAAAC2....255555575572',
-        '275555222......29892......2ABBBBBBBAAC2..2555555755552',
-        '.27555555222....2892......2ABBAABBBBAAC2255557755755572',
-        '.27555555555222229892.22.2CABAAACABBBDC2555557755557572',
-        '..27557555555555228922EE22CABBAAACDDCDC255577557555772',
-        '..255557555555555222EEFF22CABCAADDDCDDC25775575557552',
-        '...275557755555522EEFFF2.2CABAAD22DD222555555575555572',
-        '..27555557755552EEFFF222.2CABAADDGHDDG2755225575575572',
-        '...275555557752EFFF22252.2CABACDIDDDDJ2522EE227555772',
-        '....27755555572EF22EFE22.2CAACCDDDDDJ222EEKEEE2275522',
-        '....2557555555722552EF22.2CAAC22CJJJ22EEKKKEEEEE275722',
-        '....2275577555577552E2222222CCA222222EKKEELKEEEFF27722',
-        '...255277557755577522DD2EE2M222NOO2E2EKEEELLEEFFF22252',
-        '...25572777577555772DHD2KE22EE2LPP222EKEKQQQEEFEF2.272',
-        '...25722222277755772JJD222OO2EF2P2FE2EKEQRSTQFEEF2..2',
-        '...272.25577222777222J2E2OUU2EF2O2FE2EKQRSSSQEFEF2',
-        '....2..2572225522252P2EF2UU2O22O2L222FEFQRRQEEFEF2',
-        '.......272.22572752PO2EFE22UOOO2LKV22FEFEQQLEEFEF2',
-        '........2.252727552POO2EF22MPMVP2V22M2EFEEVEEEFF252',
-        '..........255275552POO2EF22OOLVPO2UU22FEFEEEEFEF252',
-        '.........255575552POOU2EFE2OOPPOOOUUU22FEEEFFEF25552',
-        '.........255575572POOUU2EF2OPOPOOOOUU2U2FEEEEF275552',
-        '........255575572POOUUM2EF2OPOUUPOOUUU2U2FEEF25575552',
-        '........255775752POOUUM222PPOUUUPOOUUU2UU2FF257577552',
-        '........257257552POOUM22OOPOUUUOOPOOUU2MUO22255752752',
-        '........272277552POUM22OOPOOUU22OOPPOOU2MUOP255772272',
-        '.........2..27572PUM2.2OPPOUU2.22OOPPUU22MUP27572..2',
-        '............27722PM2...2OPOU2...22OOPU22.2MP22772',
-        '.............22..22.....22222....22222U2..22..22',
-        '.......................2OUU2......22OUU2',
-        '.......................2OU2........2OUU2',
-        '......................2OUU2.......2OUUU2',
-        '......................22U2........222UU2',
-        '.....................2FF22........2FE22',
-        '.....................2FFE2........2FFEE2',
-        '......................222.........22222',
-        '...................................222',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................111........................2....',
+        '...........................13341111...................252...',
+        '..........................13414333311................2552...',
+        '.........................1341.11111331..............25552...',
+        '..........................1661.....1361............255572...',
+        '...........................11611111.1361..........2555572...',
+        '...............2.............1666661661..........2555572....',
+        '..............282.............11111611..........25555aa2....',
+        '..............2892.................1..........22555aaa72....',
+        '..............2892............22222..........255557aa72.....',
+        '.22...........29892.........22AAAAA22......22555a77aa72.....',
+        '255222.........2892........2AABBBAAAC2....25555aa7aa72......',
+        '275555222ooo...29892......2ABBBBBBBAAC2..2555aaa7aaaa2......',
+        '.275555552p2oooo2892......2ABBAABBBBAAC22555a77aacaa572.....',
+        '.275555555ppppp229892.22.2CABAAACABBBDC255aaa77aaaa7572.....',
+        '..275575555pppp5228922EE22CABBAAACDDCDC255a77aacaa5772......',
+        '..255a57555ppqp55222EEFF22CABCAADDDCDDC2577aacaaa7552.......',
+        '...275aa775pppq522EEFFF2p2CABAAD22DD222555aaaaca555572......',
+        '..27555aa77a5pp2EEFFF222p2CABAADDGHDDG275522aa75575572......',
+        '...27555aaa77a2EFFF222q2p2CABACDIDDDDJ2522EE227555772.......',
+        '....27755aaaa72EF22EFE22q2CAACCDDDDDJ222EWWWWE2275522.......',
+        '....2557555aaa722552EF22q2CAAC22CJJJ22EEWWWXXEEE275722......',
+        '....22755b75aaa77aa2E2222222CCA222222EWWWXLWEEYFF27722......',
+        '...25527755b75aa77a22DD2EE2M222NOO2E2WWXXXLLEEFFF22252......',
+        '...2557277b5bb5a5772DHD2KE22EE2LPP222WWklQQQEYFYF2.272......',
+        '...2572222227bb55772JJD222ff2EF2P2FE2EWkQRSTQFYmF2..2.......',
+        '...272.255772227b7222J2E2Off2EF2O2FE2EWkRSSSQYmnF2..........',
+        '....2..2572225522252P2EF2Uf2O22O2L222FEFkRRQYYmnF2..........',
+        '.......272.22572752PO2EFE22UOOO2LKV22FEFEQQLYZmYF2..........',
+        '........2.252727552POO2EF22MPMVP2V22M2EFEEVZZmFF252.........',
+        '..........255275dd2POO2EF22OOLVPO2UU22FEFZZZZFYF252.........',
+        '.........255575dd2POOU2EFE2OOPPOOgggg22FEZZFFYF2e552........',
+        '.........25557dd72POOUU2EF2OPhPOOOggg2g2FZYYYF27ee52........',
+        '........25557dd72POOUUM2EF2OhhUUPOgggg2U2FYEF25e7eee2.......',
+        '........25577d7d2POOUUM222hhhUUUPOOggg2UU2FF257e77ee2.......',
+        '........2572d7552POOUM22OhhhUUUOOPOggg2MUO222557527e2.......',
+        '........272277552POUM22hhhhhUU22OOPPggg2MUOP255772272.......',
+        '.........2..27572PUM2.2OhhOUU2.22OOPPUU22MUP27572..2........',
+        '............27722PM2...2hPOU2...22OOPU22.2MP22772...........',
+        '.............22..22....22Oj22....2222j22..22..22............',
+        '.......................2Oijj2......2Oijj2...................',
+        '.......................2Ojj2.......2Oijj2...................',
+        '......................2Fij2.........Oijj2...................',
+        '......................2Ejj2.........2FFj2...................',
+        '....................22Fij2..........2Eij2...................',
+        '...................2FEEFj2..........2FEFFj2.................',
+        '....................22222............22222..................',
+        '............................................................',
       ],
     },
     822: {
@@ -11586,61 +11706,61 @@ Seimyaku.alternateForms = {
         '',
       ],
     },
-    834: {
-      palette: [null,"#191622","#302337","#c1acbd","#80553f","#92819c","#d1995e","#3a3346","#705a82","#c1a4ce","#ffe4a0","#ebc675","#fff2c1","#8c739d","#776782","#ccc2e4","#9083ae","#f6e5ff","#976e4d","#ffe4cd","#fff7e9","#c84657","#d29a9c","#efaba5","#624c76","#f2e4ee","#55455f","#aa91bd","#cc81bc","#c5a3b1","#76627b","#f6e3cd","#352c43","#985194"],
+    834: { // 宵月魔后イリュゼ
+      palette: [null, '#191622', '#302337', '#c1acbd', '#80553f', '#92819c', '#d1995e', '#3a3346', '#705a82', '#c1a4ce', '#ffe4a0', '#ebc675', '#fff2c1', '#8c739d', '#776782', '#ccc2e4', '#9083ae', '#f6e5ff', '#976e4d', '#ffe4cd', '#fff7e9', '#c84657', '#d29a9c', '#efaba5', '#624c76', '#f2e4ee', '#55455f', '#aa91bd', '#cc81bc', '#c5a3b1', '#76627b', '#f6e3cd', '#352c43', '#985194', '#e0c3df', '#ad90b5', '#80648f', '#ffdd96', '#c68a58', '#bd8966', '#b98659', '#efca83', '#bc91b8', '#704e72', '#fae2cf', '#5e4c6b', '#7b648a', '#4e405b', '#57445f', '#776186', '#a48caf', '#65516e'],
       rows: [
-        '',
-        '',
-        '',
-        '',
-        '',
-        '.......1...................................2',
-        '......131.................................242',
-        '.....1551.................................262',
-        '....15781................................24642111',
-        '....17981...............................246A642BB1',
-        '....179981...............................24642CC1',
-        '....1799981...............1..............1262CC1',
-        '....1799DD81.............1E1.....1.1....1B242C1',
-        '....1799DDD81...........17E1.1111F111...1BC2C1',
-        '...17999DDDD81.........17EE11FFFFFFG111.1BCCB1...........1',
-        '...17999DD8DD81....1..17EE71FHHHHHHFG1711BCCB1..........131',
-        '...1799DDD8DDD81..1C117EE771HHHHHHHFFG171ICBB1...1....11551',
-        '..17999DD8DDDDD81.1C17EEE771HFFHHHFHJG1E1IBBB1..1C111185571',
-        '..1799DD8DDDDDDD81CB17EE7771FFFFHJJGJG1E1IIBBB11CB18859971',
-        '..1799DD8DDDD88D1CCBC17E7771FFFFFJGJJG1711IIBBBBB155999971',
-        '..179DD8DDDD88DDD1CBC1177771GFFJJJJ11171..1IIBBB199999971',
-        '..17DDD8DDD8DDDDDD1C1..1111HFFJ11KJJL11111846II1999999971',
-        '..17DD8DDD8DDDD7777171..1GFHFFJJLJJJM11885D4611DDDD999971',
-        '..17D8DDD8DD7881117771..1GFHFGJNJJJM18885DD46D8DDDDDD9971',
-        '..17711DD8D7811...1771..1GFHGGJJJMM1178DD8D46DD88DDDD99971',
-        '..171.1D77711....1171...1GFFG11GM11.17DD1D846DDDD88DDD99971',
-        '...1..17711.....1551..1.1GFFG1M11O111171J11J18DDDDD88DD9971',
-        '......171......1791J11J11GFFG1PQQR11O111JMJJ1D877DDDD8DDD71',
-        '.......1......17991JJMJ11GFFG1SRR1TT11111MJ11D1187DD1118D71',
-        '.............1799511JM1111GFG11R1UTV1QQ11MO11171177D1..1771',
-        '............17995991OM11QW1G1U1Q1UT11QWQW11171971171....171',
-        '...........17995999911WQWW1111Q1S11111QWW1946199711......1',
-        '...........179599998D1QWW1WQQQ1SVX1OW1QW1194695971',
-        '..........179959DD8DD1QW11OROXR1X11OWW11R1846959971',
-        '..........17959DD8DDD71111QQSXRQ1WW1WWQQR1D46D95971',
-        '.........179959DD8DD7771.1QQRRQQQWWW1WWQQR146D959971',
-        '.........17959DD8D77711..1QRQRQQQQWW1WWQQR146DD95971',
-        '........179959D777111...1QQRQWWRQQWWW1WWQQR467D959971',
-        '........17959D7711.....1QRRQWWWRQQWWW1WWQQR4677D95971',
-        '........1751D771......1QQRQWWWQQRQQWW1OWQQR46177D1571',
-        '........171.171......1QQRQQWW11QQRRQQW1OWQR46.171.171',
-        '.........1...1.......1QRRQWW1.11QQRRWW11OWR46..1...1',
-        '....................111QRQW1...11QQRW1..1OR46',
-        '...................1QQQ11111...1Q1111....11',
-        '...................1QWWQWW1....1QW1',
-        '....................11QWW1.....1QWQ1',
-        '......................111.......1QW1',
-        '................................1QW1',
-        '...............................1QWW1',
-        '...............................1QW1',
-        '...............................1QW1',
-        '................................11',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '.......1...................................2................',
+        '......131.................................242...............',
+        '.....1551.................................262...............',
+        '....15781................................24642111...........',
+        '....17Y81...............................246A642bb1..........',
+        '....17Y981...............................24642CC1...........',
+        '....17Y9981...............1..............1262CC1............',
+        '....17Y9ZZ81.............1E1.....1.1....1B242C1.............',
+        '....17Y9ZDD81...........17E1.1111F111...1bC2C1..............',
+        '...17YY9ZaDD81.........17EE11FFFFFFG111.1bCCb1...........1..',
+        '...17Y99Za8DD81....1..17EE71FHHHHHHFG1711bCCc1..........131.',
+        '...17Y9ZZD8DDD81..1C117EE771HHHHHHHFFG171dCBc1...1....11551.',
+        '..17YY9ZD8DDDDD81.1C17EEE771HFFHHHFHJG1E1IBBB1..1C111185571.',
+        '..17Y9ZZ8DDDaaDD81CB17EE7771FFFFHJJGJG1E1IdBBB11Cb1885Y971..',
+        '..17Y9ZD8DDaa88D1CCBC17E7771FFFFFJGJJG1711IdBBBbb15599Y971..',
+        '..17YZZ8DDaD88DDD1CBC1177771GFFJJJJ11171..1IdccB1YYYY9971...',
+        '..17DZD8DaD8DDDDDD1C1..1111HFFJ11KJJL11111846II1YY9999971...',
+        '..17aD8DaD8DaaDnno7171..1GFHFFJJLJJJM11885D4611DDZZ999971...',
+        '..17D8DDa8Da788nnnnoo11.1GFHFGJNJJJM18885DD46D8aDDDDZ9971...',
+        '..17711DD8D7811nnnnnn1o11GFHGGJJJMM1178DD8D46DD88aDDD99971..',
+        '..171.1D77711.1pppnnnnno1GFFG11GM11.17DD1D846DDDD88aDD99971.',
+        '...1..17711...11m551pn1n1GFFG1M11O111171J11J18DDDDD88DD9971.',
+        '......171......1791J11J11GFFG1PQQR11O111JMJJ1D877DDDD8aDZ71.',
+        '.......1......17991JJMJ11GFFG1SRR1TT11111MJ11D1187DD1118D71.',
+        '.............1799511JM1111GFG11R1UTV1QQ11MO11171177D1..1771.',
+        '............17YY59Y1OM11QW1G1U1Q1UT11QWQW11171Y71171....171.',
+        '...........17YY59Y9911WQWW1111Q1S11111QWW19461Y9711......1..',
+        '...........17Y59Y998D1QWW1WQQQ1SiX1OW1QW119ef95971..........',
+        '..........17YY5YZZ8DD1QW11OROXg1X11OWW11R184695Y971.........',
+        '..........17Y59DZ8DDD71111QQSXRQ1WW1WWQQR1D46D95971.........',
+        '.........17YY5YZD8DD777171QQgRQQQWWW1WWQQR146D95Y971........',
+        '.........17Y59DZ8D77711771QghRQQQhWW1WWQQg146DD95971........',
+        '........17YY5YZ7771111111QQghWWgQhWWW1WWQQR467D95Y971.......',
+        '........17Y59D7711.....1QRghWWWRQQWWW1WWQQgef77D95971.......',
+        '........1751D771......1QQghWWWQQRQQWW1OWQQg46177D1571.......',
+        '........171.171......1QQghhWW11QQRghhW1OWQg46.171.171.......',
+        '.........1...1.......1QgghWW1.11QQRRWW11OWg46..1...1........',
+        '....................111QRQW1...11QQRW1..1OR46...............',
+        '....................1QRQQW1.....1QRQW1...11.................',
+        '...................1QQWW1........1QQWW1.....................',
+        '...................1QQWW1........1RQQW1.....................',
+        '....................1WQQW1........1QQW1.....................',
+        '.....................11111........1QWW1.....................',
+        '...................................1RQW1....................',
+        '...................................1QQWW1...................',
+        '....................................1111....................',
+        '............................................................',
       ],
     },
     835: {
@@ -16773,369 +16893,750 @@ Seimyaku.recipePortraits = {
   for (const id of Object.keys(sprites)) Seimyaku.uniqueSpritePainters.set(Number(id), drawUniqueSpirit);
 })();
 
-(() => {
-  'use strict';
-
-  // All positions are native pixels on the same grid as the ordinary kin.
-  // Each wing is drawn from its outer tip toward the shoulder.
-  const feather = {
-    high: [
-      'W','WW','WWW','VWWW','VWWWW','.VWWWW','.WWWWWW','.VWWWWWW',
-      '..VWWVWWWW','..VWWVVWWWW','...VWWVWWWWWW','...WWWWVWWWWWW',
-      '..VWWWVWWVVWWWW','..VWVWWWWVVWWWWW','...VVWWWVWWVVWWWW',
-      '....WWVWWWVWWVVWWW','...VWWWWWVWWWWWWWW','...VWWVWWVWWVVWWVW',
-      '....VVWWWVWWVVVWWV','.....WWVVVWWVVVVV','....VWVV.VVWWVVV',
-      '....VV...VWWVV','........VWVV','........VV'
-    ],
-    sail: [
-      'WW','VWWWW','.VWWWWWW','.VWWWWWWWWW','..VWWVWWWWWWWWW',
-      '..WWWWVWWWWWWWWWWW','...VWWWVVWWWWWWWWWWW','..VWWWWWVVWWWWVVWWWWWW',
-      '...VWWWWWWVVWWWVVWWWWW','....VVWWWWWWVWWWVVWWWW','....WWVWWWWWWVWWWWWWWV',
-      '.....VWWVVWWWWVVWWWVV','......VVWWVVWWWVVWVV','.......VVVWVVWWWVVV',
-      '...........VVVWWVV','..............VVV'
-    ],
-    folded: [
-      '.........WW','........WWWW','.......WWWWWV','......WWWWWWVV',
-      '.....WWWVWWWWVV','....WWWWVWWWWVWW','...WWWWVWWWVVWWWW',
-      '...WWWWVWWVWWWWV','..WWWWVWWVVWWWV','..WWWVWWWVWWWVV',
-      '.WWWVWWWVWWWVV','.WWWVWWVWWVVV','WWWVWWVVWVVV',
-      'WWVVWVWWWVV','WV.WVWWWVV','V..VVWWVV','....VWVV','....VV'
-    ]
-  };
-  const membrane = {
-    high: [
-      '....T','...tt','..tnN','..nAN','..nAAN','..nAAAN','..nAAaaN','..nAAaaaN',
-      '.nAAAaaaaN','.nAAAaaNaaN','.nAAaaaNaaaN','nAAAaaNaaaaaN',
-      'nAAaaNaaaaaaaN','nAAaaNaaaaNNaaN','nAaaNaaaaNNaaaan','naaaNaaaNaaaaaann',
-      'naaNaaaNaaaannnnnn','naNaaaNaanNN...nnn','nn..aaNanN......nn',
-      'n...annn........n','....nn','....n'
-    ],
-    sail: [
-      'T','tt','nttN','.nAAtNN','.nAAAAttNN','..nAAAAAAtNNN',
-      '..nAAAAAAAaaNtNN','..nAAAAaaaaaaNaatNN','..nAAaaaaaaNaaaaatNNN',
-      '.nAAAaaaaNNaaaaaNaaNn','nAAAaaaNNaaaaaNNaaaan','nAAaaNNaaaaaNNaaaaann',
-      'naaaNaaaannNaaaaannn','naN...aanN..aaannn','nn....ann....nnn',
-      'n......n.....nn','.............n'
-    ],
-    folded: [
-      '.........t','........tt','.......nAt','......nAAtN',
-      '.....nAAtAAN','....nAAtAAAN','...nAAtAAAANN','...nAtAAAANaaN',
-      '..nAAtAaaNaaaan','..nAtAaaNaaannn','.nAAtAaaNaannn',
-      '.nAtAaaNannn','nAAtAannn','nAtAann','nt.ann','n...n'
-    ]
-  };
-  // Split primaries at the lower edge of the open wing into visible feather tips.
-  const primaries = ['....WWW','...WWWWVV','..WWWWVVWWW','.WWWWVVWWWVVWW',
-    'WWWWVVWWWWVVWWW','WWVVVWWWWVVWWWV','WV..WWWWVVWWWV','V...WWVV.WWWV',
-    '....WV...WWV','....V....WV','.........V'];
-  const pinion = ['.....LL','...LLWL','.LLWWWL','LWWWLL','WWLLr','LLr','r'];
-  const tunics = {
-    robe: [
-      '......sspp','....rLcspLLr','..rrLLcWWccLLrr','.rrccLLWJLLccLrr',
-      'rrccddLJjLccdLLrr','.dd.ccLLLccdd.dd','....cccLLccdd','....dccccccdd',
-      '....rLLrjLrLr','....ccLJjLccdd','...cccLLLcccddd','...ccLccLccccdd',
-      '..cccLccddLccddd','..ccLLccdddLccddd','.cccLccdddccLccdd',
-      'ccLLccddd..ccLLccd','cLLccddd....ccLLdd','.cLccdd......ccLd'
-    ],
-    mail: [
-      '......sspp','...LLrrssprrLrr','..LLLccLLcWLLLrr','.LLVccLLJjLcVVLL',
-      '.rddccLLjLccddrr','....ccLrLrLdd','....rLccLccLr','....drrLLLrrd',
-      '....LLrrJrrLL','...rccLLjLLccd','...ccLd...cLccd','..ccLLd...ccLccd',
-      '.ccLLdd....ccLccd','.cLLdd......ccLdd','..Ldd........cLd'
-    ]
-  };
-
-  const mantle = ['.....LL','....LLcr','....Lccr','...Lcccr','...Lccdr','..Lccddr','..Lccddr','..Lccddr','.Lccddr','.Lccddr','Lccddr','Lccddr','Lccdr','Lcdr','Ldr','Lr'];
-  // The off hand and the weapon hand have different wrist poses.
-  const fist = ['.ss','sws','pps','.p'];
-  const upPalm = ['s..s','ssps','.sp','.rp'];
-  const weaponPixels = {
-    lance: ['..........WW','.......WWWL','....WWWLLL','..WWLLLrr','rLLLLrr','rrLrr','rr'],
-    // The stepped upper edges meet at the binding. Ink stays inside each page.
-    book: ['.WWW........WWW','rWWWWW....WWWWWr','rWLLWWW..WWWLLWr',
-      'rWWWWWWWnWWWWWWr','rWLLLWWWnWWLLLWr','rWWWWWWWnWWWWWWr','rWLLWWWWnWWWLLWr',
-      'rWWWWWWWnWWWWWWr','rLLLLWWWnWWWLLLr','rrrrrLLLnLLLrrrr','.....rrrJrrr'],
-    claw: ['.....W','....WL','...WL..W','..WLL.WL','.WLL.WL..W','.rLLWLL.WL','rLLrLL.WL','rJLLLLLL','rjLLrrLr','.rrrrr'],
-    scythe: ['........rrrLLLLrr','.....rrLLWWWWWWLLr','...rLLWWWWLLLLLLLrr',
-      '..rLWWWLLrrr..rrLLr','.rLWWLrr........rrr','.LWWLr...........rr',
-      'rWWLr','rWLr','Wr','W'],
-    blade: ['.......W','......WW','.....WWL','....WWLL','...WWLL','..WWLL','.WWLL','WWLL','WLL','LL'],
-    crescent: ['.....LLL','...LLWW','.LLWWW','LLWWW','LWWW','LWWL','LWWL','rWLL','rLLL....W','rrLLL..WL','.rrLLLLL','..rrLLL','....rr'],
-    flame: ['.....J','....JL','..J.JL','..jJWL.J','.jJWWLJJ','jJWWWLJj','.jJWWJj','..jJJj','...jj'],
-    harp: ['LL........LL','LWL......LWL','.LWL....LWL','.rLL....LLr','..rLLWWLLLr',
-      '..rLWLWLWLr','..rLWLWLWLr','..rLWLWLWLr','..rLWLWLWLr','..rLLLWLWLr','...rLLLLLr','....rrLrr'],
-    orb: ['...LJ','..LWWJ','.LWWWJJ','.LWWJJj','..LJJjj','...jjj'],
-    shield: ['.....LL','...LLWLLL','.LLWWWLLLLL','LWWLLJWLLLrr','LWLLLJJLLrrr','LWLWWJWLLrLr','LWLJWWWJrLLr',
-      'LWLJWWWJLrLr','rLrLLJWLLrLr','rLrLLjJLLrLr','.LrLLjLLLrr','.rLrLLLLrLr','..rLLLrrLr','...rLLLLr','....rLLr','.....rr'],
-    staff: ['.....W','...L.W.L','..LLJJJLL','.LrJJWJJrL','.LrJWWWJrL','..LrJWJrL','...LLjLL','...rLLLr','....rLr'],
-    sparkle: ['..W','..W','.WLW','WWLWW','.WLW','..W'],
-    note: ['..LLL','..rLL','..L','..L','JLL','JJL','.j'],
-  };
-  const gearColors = {
-    ember:['#ae434a','#f47668','#ffbc8e'], stone:['#836281','#bb8fac','#f4ccaf'],
-    dawn:['#368496','#65c0c2','#d8fcde'], volt:['#8367b5','#ba9ae1','#f9dcff'],
-    tide:['#526ba9','#72b6d8','#c1f0f0'], shade:['#985194','#cc81bc','#f7c7e8']
-  };
-  // Wing shape, outer edge / top, body center / base, lower body, and the bend of each arm.
-  const cast = {
-    556: {w:['high',4,5,'sail',55,17],x:30,y:13,item:'book',arms:[[21,33,18,35],[36,33,39,28]]},
-    566: {w:['folded',7,18,'high',54,9],x:30,y:12,item:'staff',arms:[[23,32,20,29],[39,32,41,29]]},
-    570: {w:['sail',2,15,'folded',53,16],x:30,y:11,item:'claws',arms:[[25,32,21,28],[41,32,43,27]]},
-    588: {w:['high',7,4,'folded',52,19],x:30,y:12,item:'scythe',arms:[[21,32,24,33],[37,28,38,22]]},
-    604: {w:['folded',9,18,'sail',56,12],x:29,y:11,item:'sword',arms:[[25,32,22,34],[40,30,42,26]]},
-    648: {w:['sail',2,14,'high',55,4],x:29,y:12,item:'crescent',arms:[[22,32,20,28],[39,32,42,27]]},
-    666: {w:['high',3,5,'high',56,7],x:30,y:12,item:'flames',arms:[[21,33,18,30],[37,31,40,27]]},
-    667: {w:['sail',1,17,'high',52,4],x:30,y:11,item:'lance',arms:[[25,32,23,34],[40,31,41,26]]},
-    668: {w:['folded',8,18,'sail',56,14],x:30,y:12,item:'harp',arms:[[20,32,17,32],[32,34,26,31]]},
-    675: {w:['sail',1,15,'folded',50,17],x:28,y:12,item:'bow',arms:[[21,32,27,29],[39,31,44,30]]},
-    686: {w:['high',4,9,'folded',55,17],x:30,y:12,item:'bells',arms:[[21,33,19,29],[37,33,40,30]]},
-    715: {w:['high',4,9,'high',55,9],x:30,y:11,item:'twins',arms:[[18,31,16,32],[35,33,39,30]]},
-    722: {w:['high',4,7,'sail',56,18],x:30,y:12,item:'shield',arms:[[23,32,21,28],[40,33,41,30]]},
-  };
-
-  // Facing is the gaze direction. The lean moves the shoulders relative to the hips.
-  const poses = {
-    book:     {facing:-1, lean:-2, gaze: 2, stance:'hover'},
-    staff:    {facing: 1, lean: 1, gaze:-1, stance:'hover'},
-    claws:    {facing: 1, lean: 4, gaze: 1, stance:'lunge'},
-    scythe:   {facing: 1, lean:-2, gaze:-1, stance:'pivot'},
-    sword:    {facing: 1, lean: 4, gaze: 0, stance:'lunge'},
-    crescent: {facing: 1, lean: 2, gaze:-2, stance:'hover'},
-    flames:   {facing:-1, lean:-2, gaze: 0, stance:'pivot'},
-    lance:    {facing: 1, lean: 4, gaze: 0, stance:'lunge'},
-    harp:     {facing:-1, lean:-2, gaze: 2, stance:'hover'},
-    bow:      {facing: 1, lean: 1, gaze: 0, stance:'draw'},
-    bells:    {facing:-1, lean:-1, gaze:-1, stance:'hover'},
-    twins:    {facing:-1, lean:-4, gaze: 1, stance:'lunge'},
-    shield:   {facing: 1, lean: 2, gaze: 0, stance:'pivot'},
-  };
-  // The near eye is two pixels wide. The far eye and horn recede into the outline.
-  // Hair colors, fringe patterns, and trailing locks come from this individual's ordinary head.
-  function turnedHead(put,m,x,y,pose) {
-    const {facing,gaze} = pose;
-    const left = facing < 0;
-    const {p,face} = m;
-    const eye = m.girl ? 7 : 6;
-    const gentle = face[eye].includes('L');
-    const profile = face.map((original,row)=>{
-      if(row < eye) {
-        const hair = Array.from(original, ch=>'sp'.includes(ch) ? 'h' : ch);
-        if(row >= eye-3) {
-          const cheek = row===eye-3 ? 's' : row===eye-2 ? 'ssas' : 'sssass';
-          hair.splice(12-cheek.length,cheek.length,...cheek);
-        }
-        return hair.join('');
-      }
-      const fringe = ['ahHhh','ahHhh','ahHha','ahha','ahha'];
-      const features = gentle ? ['sLLssL','sswEssE','sbswssp','asssssp','..appp'] :
-        ['skkssk','ssEwssE','sbssssp','asssssp','..appp'];
-      const i = row-eye;
-      if(i<features.length) return fringe[i]+features[i];
-      return original.slice(0,Math.min(6,original.length)).replace(/[ps]/g,'.');
-    });
-    // The lower edge of the cheek and the fringe follow the angle of the gaze together.
-    const place = (rows,dx,dy,colors=p)=>put(rows,x+facing*dx,y+dy,colors,left);
-    if(!m.angel) {
-      const far = m.horns.filter((_,i)=>i!==2).map(r=>r.slice(1));
-      put(far,x+facing*8,y+1,p,!left);
-    }
-    const width = 16, head = Array.from({length:profile.length+2},()=>Array(width).fill('.'));
-    profile.forEach((row,dy)=>Array.from(row).forEach((ch,dx)=>{
-      if(ch==='.') return;
-      const tilt = gaze===0 ? 0 : Math.round((dx-5)*gaze/10);
-      const yy=dy+1+tilt;
-      if(yy>=0 && yy<head.length) head[yy][dx]=ch;
-    }));
-    place(head.map(r=>r.join('')),-6,1);
-    if(!m.angel) place(m.horns,-10,0);
-    if(m.angel) {
-      const halo = m.halo, w = Math.max(...halo.map(r=>r.length));
-      const ring=Array.from({length:halo.length+2},()=>Array(w).fill('.'));
-      halo.forEach((r,dy)=>Array.from(r).forEach((ch,dx)=>{
-        if(ch!=='.') ring[dy+(dx<w/3?0:dx<2*w/3?1:2)][dx]=ch;
-      }));
-      place(ring.map(r=>r.join('')),-Math.floor(w/2),-8,{k:'#60432e',g:'#d99638',l:'#ffd675',w:'#fff4c0'});
-    }
-  }
-
-  function drawUniqueKin(ctx,def) {
-    const {kinModel,stamp} = Seimyaku.kinArtParts;
-    const m = kinModel(def);
-    const a = cast[def.id];
-    const {x,y,item} = a;
-    const pose = poses[item];
-    const {lean,facing} = pose;
-    const c = gearColors[def.element] || gearColors.dawn;
-    const p = Object.assign({},m.costume, {
-      A:'#c1a4ce',a:'#8c739d',N:'#705a82',T:'#c1acbd',
-      L:m.angel?'#efd090':'#aa91bd',r:m.angel?'#9e794d':'#624c76',
-      J:c[1],j:c[0],W:m.angel?'#fff9ed':'#f2e4ee'
-    });
-    // Keep twilit wings in the original plum ramp even for a dawn-aspected demon.
-    const pw = m.angel ? {...p,W:'#fffbfa',V:'#c4bcca'} : {...p,n:'#3a3346',t:'#92819c'};
-    const wg = m.angel ? feather : membrane;
-    const put = (rows,px,py,colors=p,flip=false) => stamp(ctx,colors,rows,px,py,flip);
-    const gear = (name,px,py,flip=false,colors=p) => put(weaponPixels[name],px,py,colors,flip);
-    const [left,lx,ly,right,rx,ry] = a.w;
-    // Higher-wing orders carry a lower pair; attach their roots at the shoulder.
-    if (def.rank>=6) {
-      put(wg.folded,9,25,pw);
-      put(wg.folded,51,25,pw,true);
-    }
-    if (m.angel) {
-      if(left!=='folded') put(primaries,lx+3,ly+(left==='high'?16:8),pw);
-      if(right!=='folded') put(primaries,rx-3,ry+(right==='high'?16:8),pw,true);
-    }
-    put(wg[left],lx,ly,pw);
-    put(wg[right],rx,ry,pw,true);
-
-    const blade = {...p,W:'#fff8df',L:'#c4c8d6',r:'#79778e'};
-    const jewel = {...p,W:c[2],L:c[1],r:c[0]};
-    const gold = {...p,W:'#fff2c1',L:'#ebc675',r:'#976e4d'};
-    const edge = m.angel ? gold : {...p,W:'#f6e3cd',L:'#c5a3b1',r:'#76627b'};
-
-    // Build a continuous shaped shaft (or sleeve) on the native pixel grid.
-    function stroke(points,width,color,lit,highlight=true) {
-      const covered = new Set();
-      for (let i=1;i<points.length;i++) {
-        const [x0,y0]=points[i-1], [x1,y1]=points[i];
-        const n=Math.max(1,Math.abs(x1-x0),Math.abs(y1-y0));
-        for(let t=0;t<=n;t++){
-          const px=Math.round(x0+(x1-x0)*t/n), py=Math.round(y0+(y1-y0)*t/n);
-          for(let j=0;j<width;j++) for(let k=0;k<width;k++) covered.add((py+j)*64+px+k);
-        }
-      }
-      ctx.fillStyle=p.k;
-      for(const pt of covered){const px=pt%64,py=pt>>6;ctx.fillRect(px-1,py,3,1);ctx.fillRect(px,py-1,1,3);}
-      for(const pt of covered){
-        ctx.fillStyle=highlight && (!covered.has(pt-64)||(!covered.has(pt-1)&&width>1)) ? lit : color;
-        ctx.fillRect(pt%64,pt>>6,1,1);
-      }
-    }
-    // Long trailing panels hang from the shoulders, with a shorter one on the weapon side.
-    if (item==='scythe'||item==='shield'||item==='lance'||item==='flames') {
-      put(mantle,x-13,y+15);
-      put(mantle,x+13,y+15,p,true);
-    } else {
-      const flip = item==='book'||item==='harp'||item==='crescent';
-      put(mantle,x+(flip?13:-13),y+15,p,flip);
-    }
-    // Asymmetrical feet establish the weight-bearing leg even at thumbnail size.
-    const boot = {...p,L:edge.L,r:edge.r};
-    if(pose.stance==='hover'){
-      stroke([[x-2*facing,y+27],[x-6*facing,y+32],[x-9*facing,y+31]],2,p.d,p.c);
-      stroke([[x+2*facing,y+27],[x+4*facing,y+34],[x+3*facing,y+37]],2,p.d,p.c);
-    } else {
-      const lunge=pose.stance==='lunge', draw=pose.stance==='draw';
-      const lead=x+facing*(lunge?10:draw?9:6), rear=x-facing*(lunge?12:draw?9:8);
-      stroke([[x+2*facing,y+27],[lead,y+30],[lead-facing,y+36]],3,p.d,p.c);
-      stroke([[x-2*facing,y+27],[x-6*facing,y+32],[rear,y+(lunge?33:36)]],2,p.d,p.c);
-      put(['rL','rrLL'],lead-facing,y+36,boot,facing<0);
-      put(['rr','rrL'],rear,y+(lunge?33:36),boot,facing<0);
-    }
-    // Compress the far shoulder, lean from the hips, and let the trailing hem swing back.
-    const tunic=tunics[m.girl?'robe':'mail'];
-    const body=tunic.map((row,i)=>{
-      const near = facing>0 ? row : [...row].reverse().join('');
-      const turned = near.slice(0,3)+near.slice(4,6)+near.slice(7);
-      const oriented = facing>0 ? turned : [...turned].reverse().join('');
-      const shift = Math.round(lean*(1-i/(tunic.length-1)));
-      return '.'.repeat(5+shift)+oriented;
-    });
-    put(body,x-12,y+13);
-    // At the collar two inlaid wing-shaped clasps frame a colored center stone.
-    const enamel = {...edge,J:c[1],j:c[0]};
-    put(['.LL','.WLr','..Lr'],x-5+lean,y+16,enamel);
-    put(['.LL','.WLr','..Lr'],x+5+lean,y+16,enamel,true);
-    put(['.J','JWj','.j'],x+lean,y+19,enamel);
-    if(item==='shield'){
-      put(['..LL','.LWL','LLr','rr'],x-8,y+15,edge);
-      put(pinion,x+11,y+13,edge,true);
-    }
-    // Sleeves sit behind the equipment. Only the fingers cross the grip.
-    a.arms.forEach(([elx,ely,hx,hy],i)=>{
-      stroke([[x+lean+(i?6:-6),y+17],[elx,ely],[hx,hy]],2,p.d,item==='flames'?p.V:p.c);
-      if(item==='flames') put(['LL','rL'],hx,hy+1,edge);
-      else put(['.LL','LLr','.rr'],hx-1,hy,p);
-    });
-    switch(item){
-      case 'book':
-        gear('book',8,25,false,{...p,W:'#ffebbf',L:'#c7a77d',n:'#a87957',J:'#d28865',r:'#814955'});
-        gear('sparkle',12,12,false,jewel); gear('orb',37,16,false,jewel);
-        break;
-      case 'staff':
-        stroke([[41,44],[41,14]],2,edge.r,edge.L);
-        gear('staff',37,6,false,edge); gear('sparkle',13,16,false,jewel);
-        break;
-      case 'claws':
-        gear('claw',22,19,true,blade); gear('claw',41,18,false,blade);
-        break;
-      case 'scythe':
-        stroke([[14,42],[51,10]],2,edge.r,edge.L);
-        gear('scythe',35,4,false,blade);
-        break;
-      case 'sword':
-        stroke([[37,33],[46,21]],2,edge.r,edge.L);
-        gear('blade',45,12,false,blade);
-        stroke([[39,23],[47,28]],2,edge.r,edge.L);
-        break;
-      case 'crescent':
-        gear('crescent',41,9,false,gold); gear('sparkle',17,16,false,gold);
-        break;
-      case 'flames':
-        // Float each spell above its own palm, leaving a clear break at the fingertips.
-        a.arms.forEach(([, ,hx,hy],i)=>{
-          gear('flame',hx+(i?6:-4),hy-14,i===1,{...jewel,W:'#fff4e7',L:'#e6d6ff'});
-        });
-        break;
-      case 'lance':
-        stroke([[6,42],[49,22]],2,gold.r,gold.L);
-        gear('lance',47,17,false,blade);
-        break;
-      case 'harp':
-        gear('harp',14,25,false,gold); gear('note',7,17,false,jewel);
-        break;
-      case 'bow':
-        stroke([[37,16],[42,20],[45,26],[45,33],[42,39],[37,43]],2,gold.r,gold.L);
-        stroke([[37,17],[27,30],[37,42]],1,blade.L,blade.L);
-        stroke([[27,30],[49,30]],1,gold.L,gold.L);
-        put(['W','LW','LLW','rL','r'],49,28,blade);
-        break;
-      case 'bells':
-        stroke([[41,44],[41,14]],2,gold.r,gold.L);
-        put(['.....WW','...LLWWLL','.LLrrLLrrLL','Lr...Lr...rL','L....Lr....L','JL...JL...LJ','LJL..JJ..LJL','WWL.LWWL.LWW','..j..jj..j'],36,10,gold);
-        gear('note',16,15,false,jewel);
-        break;
-      case 'twins':
-        stroke([[12,28],[16,34]],2,gold.r,gold.L);
-        stroke([[20,32],[12,36]],2,gold.r,gold.L);
-        put(['..LL','..LWL','...LWL','...LWWL','....LWWL','.....LWWL','......LWWL','.......LWWL','........LWL','.........LW','..........W'],14,34,blade);
-        stroke([[36,34],[43,25]],2,gold.r,gold.L);
-        gear('blade',42,16,false,blade);
-        stroke([[37,24],[44,28]],2,gold.r,gold.L);
-        break;
-      case 'shield':
-        stroke([[24,36],[18,20]],2,gold.r,gold.L);
-        put(['W','WL','WL','LWL','.WL','.LWL','..WL','..LWL','...WL','...LL'],15,11,blade);
-        stroke([[15,23],[22,19]],2,gold.r,gold.L);
-        break;
-    }
-    a.arms.forEach(([, ,hx,hy],i)=>{
-      const palm = ['crescent','harp'].includes(item) ||
-        (item==='book' && i===1) || (['bells','staff'].includes(item) && i===0);
-      if(item==='flames') {
-        put(['s..','pss','.ps'],hx+(i?1:-1),hy-2,p,i===1);
-      } else if(item==='book' && i===0) {
-        put(['sss','pps'],hx-1,hy,p);
-      } else {
-        put(palm?upPalm:fist,hx+(i?1:-1),hy-1,p,i===1);
-      }
-    });
-    if(item==='shield') gear('shield',37,23,false,{...gold,J:c[1],j:c[0]});
-    turnedHead(put,m,x+lean,y+(pose.gaze>0?1:0),pose);
-  }
-  for (const id of Object.keys(cast)) Seimyaku.uniqueSpritePainters.set(Number(id), drawUniqueKin);
-})();
+// Individual winged monsters use the same native pixel grid as SS and ★ portraits.
+Object.assign(Seimyaku.lateRankSprites, {
+    556: { // 宵角ルシェル
+      palette: [null, '#191622', '#c1acbd', '#96809c', '#3a3346', '#705a82', '#c1a4ce', '#8c739d', '#ffbc8e', '#f47668', '#776782', '#b497bf', '#ddd9e8', '#987fa7', '#fff9ed', '#a19bb2', '#ae434a', '#ffe4cd', '#c84657', '#ffebbf', '#fff7e9', '#efaba5', '#814955', '#d29a9c', '#dcb98c', '#c7a77d', '#ffdfaa', '#a87957', '#55455f', '#aa91bd', '#f2e4ee', '#624c76', '#c5a3b1', '#76627b', '#352c43', '#f6e3cd', '#796077', '#aa7a84', '#43364f', '#574759', '#77687f', '#a18b9f', '#3a2d43', '#57445f', '#776186', '#a48caf', '#65516e'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '........1...................................................',
+        '.......121..................................................',
+        '......1331..................................................',
+        '.....13451..................................................',
+        '.....14651..................................................',
+        '.....146651.................................................',
+        '.....1466651................................................',
+        '.....14667751.1.............................................',
+        '.....14667775181............................................',
+        '....146667777181.................1..........................',
+        '....1466677518981.......1.......1A1.........................',
+        '....14667771889881.....1A1.1111.1A41....11..................',
+        '...1466B7757189811...114A11CCCC11AA41..1991............1....',
+        '...146BB7577D181751.14AA11CEEEEC14AA41198891..........121...',
+        '...146BB75777D1577514AA1FCCEEEEE144AA41888991.......11331...',
+        '...14677577775577771AA1FCCECCEEE144AAA41899G1....11153341...',
+        '...14777577757777771A1FCEECEECCE1444AA4199GG1.1115536641....',
+        '...1477577757777j44141FHECCEECFE1444A411GGG1115533666641....',
+        '...1475777577i55iij411FHFHHHHCCF144441..111555366BB6641.....',
+        '...14411775745kiiiijj1FHHFH11HCCE11111115535776BBBB6641.....',
+        '...141.1711111hkkiii11111HHIHHCCECF115537757777D7666641.....',
+        '....1..11JJJ1111hk11JJ1IHHKHLHFCCCF15537777757777776641.....',
+        '.......1MJJJJJ1.11JJJJ1NHHHHHHFFCCF151751777755777766641....',
+        '.......1MJOPJJJ11JJQPPO1NHHNF11FECF11H11H1777775577766641...',
+        '.......1MQJJJJJQRQJJJJQM1NN11S1FCCF11HNHH1557777755776641...',
+        '.......1MJPPPOJQRJJPPPJM111TU91FCF11V1NH11775447777577741...',
+        '.......1MJJJJJQORQJJJJQM1WX1911FF1SS11NV11771154771115741...',
+        '.......1MJPPJJQORQJJPPJM1WX1T11F11SYSS111141..14471..1441...',
+        '.......1MJJJJJJJRJJJJJJM111S1911Y11SYYY1T141...141....141...',
+        '.......1MPPPPJJJRJJJPPPM11Y19ZG1Y11SYYY1aT11....1......1....',
+        '.......1MMMMMPPPR111MMMM11Vb1G1TV1.1SY1SaT1.................',
+        '........11111MMM1HHH1111.1SST1TSYY1111cSaT1.................',
+        '.............1111NNH11..1SaaTTSScYY11VYYSST1................',
+        '.................1111...1SaTSSSScYY11VYYSST1................',
+        '..................11...1SSaTSSYTScYY11VYYSST1...............',
+        '........................1SSTTSaYYTScYY1YYSST1...............',
+        '.......................1SSaTSScYYSTaYY1VYSST1...............',
+        '......................1SaTTSScYY11aTSSY1VYST1...............',
+        '......................1STTSSYYY111SSTYY11VYT1...............',
+        '.......................1STSSYY1..11STY1..1VT1...............',
+        '........................111111....1111d1..11................',
+        '.........................1S1ef1....11dgg1...................',
+        '..........................11ee1.....11gg1...................',
+        '..........................1ge11......111....................',
+        '.........................1gg1Y1.............................',
+        '..........................1111..............................',
+        '............................................................',
+        '............................................................',
+      ],
+    },
+    566: { // 宵角フィオラ
+      palette: [null, '#191622', '#f6e3cd', '#c5a3b1', '#bb8fac', '#76627b', '#e4d0ce', '#a58c9d', '#c1acbd', '#96809c', '#705a82', '#3a3346', '#776782', '#836281', '#c1a4ce', '#ddd9e8', '#fff9ed', '#a19bb2', '#8c739d', '#f4ccaf', '#ffe4cd', '#987fa7', '#b497bf', '#c84657', '#fff7e9', '#d29a9c', '#efaba5', '#aa91bd', '#f2e4ee', '#55455f', '#624c76', '#352c43', '#716177', '#a28b97', '#43364f', '#574759', '#77687f', '#3a2d43', '#a18b9f', '#57445f', '#776186', '#a48caf', '#65516e'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '..........................................1.................',
+        '........................................11211...............',
+        '.......................................1312131..............',
+        '......................................133444331...1.........',
+        '.....................................13564247531.181........',
+        '.....................................13542224531.1991.......',
+        '..........................1...........135424531..1AB91......',
+        '.........................1C1.......1...133D331...1AEB1......',
+        '........................1BC1.111111C1..1533351..1AEEB1......',
+        '.......................1BCC11FFFFF11111.15351..1AEEEB1......',
+        '...............1......1BCCB1FGGGGFFHH1B11111..1AIIEEB1......',
+        '..............1J1....1BCCBB1GGGGGGFFFH1B1351.1AIIIEEB1......',
+        '..............1J1...1BCCCBB1GGGFFFGGKH1C13511AIIIIEEEB1.....',
+        '.............1J4J1..1BCCBBB1GFFGGFFGKH1C1351AIIAIIEEEB1.....',
+        '............1JJ4JJ1..1BCBBB1GHFGGKKHKH1B1351IIIAIIIEEB1.....',
+        '.............1J4J1....1BBBB1HFFKKKHK11B11351ILIIAIIMEEB1....',
+        '............1B1J1A1....1111GFFK11KK1N11.1351ILLIIAIMMEB1....',
+        '...........1BEM1EEA111111HFGFFKKNOKKP1.11351ALIIIAIMMEB1....',
+        '..........1BEE9MEEAfffff1HFGFHKQKKKK1.1B1351AAIIIIAIIEB1....',
+        '.........1BEE9EEEEAAeeee1HFFHHKKKKKP11BB1351IIAIIIAIIIB1....',
+        '.........1BE9EMEEAIIAgee1HFFH11HPPP11BBe1351IIIAIIIAIIB1....',
+        '........1BEE9EIIAIIIId111HFGH1P111111Bff1351ABIIAIIIAIB1....',
+        '........1BE9EIIAIII1d11R1HFFH1STTR11U1ee1151gABIAII11BB1....',
+        '.......1BEE9EIIAII1K11K11HHFH14RR1331111KK11111BBBI1.1B1....',
+        '.......1BE9EIIAIBB1KKPK1111HH11R15321TT1KOK1...11BB1..1.....',
+        '......1BEE9EIBBB1111KP11TVV1151T15311TV1KPP1.....1B1........',
+        '......1BE9EIBB11...1UP1TVV1T11R1411111TV1P11......1.........',
+        '......1B91IBB1....1R11TVVV1VWT142D11.1TV1151................',
+        '......1B1.1B1.....1RWT1TV11UXUD1D1U1..1T1351................',
+        '.......1...1......1RWTY111TT4DRT1VV1...11351................',
+        '.................1RTTVVU11WWRRTTTYVV1...1351................',
+        '.................1RTTVVU11WRTRTTTYVV1...1351................',
+        '................1RTTVVU11TWRTVVRTWYVV1..1351................',
+        '................1RTTVVU11TRRWVVVRTWYVV1.1351................',
+        '................1RTTVU11TTRTYVVTTRTWVV1.1351................',
+        '................1RTVU11TWRTTVV11TWRRTTV11351................',
+        '................1RVU1.1TRRTVV1..1TTRRVV11351................',
+        '................1RU1..11TRTV1...11TTRV1.1351................',
+        '.................11..1Za1111.....11111..1351................',
+        '....................1bbZ1V1......1TV1...1351................',
+        '....................1bb1V1.......11V1...1351................',
+        '.....................1111.......1ca11....11.................',
+        '................................1aa1........................',
+        '................................11ab1.......................',
+        '.................................11bb1......................',
+        '...................................11.......................',
+        '............................................................',
+      ],
+    },
+    570: { // 宵角マリエル
+      palette: [null, '#191622', '#776782', '#3a3346', '#e5b9c2', '#c1acbd', '#fff2ea', '#96809c', '#a87b92', '#705a82', '#c1a4ce', '#fff8df', '#ffe4cd', '#c4c8d6', '#b497bf', '#8c739d', '#987fa7', '#c84657', '#fff7e9', '#efaba5', '#79778e', '#9fa5bd', '#e3e5e9', '#d29a9c', '#f2e4ee', '#624c76', '#aa91bd', '#55455f', '#c5a3b1', '#76627b', '#f6e3cd', '#352c43', '#f47668', '#7b6170', '#ae434a', '#43364f', '#b38189', '#77687f', '#574759', '#a18b9f', '#3a2d43', '#57445f', '#776186', '#a48caf', '#65516e'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '.............................1..............................',
+        '............................121.......1.....................',
+        '...........................1321.11111121....................',
+        '..1.......................1322114444412311..................',
+        '.151.....................132231466664412231.1...............',
+        '.17711..................1322331666666681223171..............',
+        '.13779111..............132223316446666481221771.............',
+        '..13AA799111.....1.....13223331444466444812171B1............',
+        '..13AAAA779911111B1.....132333144444CC6C81311BD11...........',
+        '...13AAEEAA799911DB1.....133331844CCC88C8111BD11B1..........',
+        '...13AAEEEEAFF1B11DB1111111111644C11CCCC811BDD1BD11.........',
+        '...13AAAAFGFF11DB1DDB1hhhhh184644CCHIC1111BDD1BD11B1........',
+        '...13AAFFFFF1B11DB1DDB1gggg184648CJCCCCH11KLMBDD1BD1........',
+        '..13AAAFFFF91DB1DDBMLK1iggf184488CCCCCCN1KDDKDD1BD131.......',
+        '.13AAAFFF99FF1DB1DDKDDK1iii18448118NNNN11K11MDDLL1A31.......',
+        '.13AAFF99FFFFF1LLDDMM1111ff184481O11111P11CC1KKDK1AA31......',
+        '.13FFF9FFFF3391KDKKD1CC1P11184481QQR1SS111CIC1K11A7A31......',
+        '.13F9111FF3911F11KK1CIC1P1P1184811R1TSU1R1CNN113FA7AA31.....',
+        '.1331..1F331..133111NNC1111RV18811R1TS11RV1N11133FA7A31.....',
+        '.131....131...1331.11N11R11RV1111R1W1111RVV11..133F1731.....',
+        '..1......1....131.1QX11RVRRVV1RRR1WUY1111RVV1...131.131.....',
+        '...............1..1QXRZ1RVVV1aPYQP1Y1...1RV1.....1...1......',
+        '..................1QXRZV1RV1RRWYQRR1V1..1RV1................',
+        '.................1QRRVVP1111XXQQRRRZVV1..11.................',
+        '.................1QRRVVP1.1XQRQRRRZVV1......................',
+        '................1QRRVVP1.1RXQRVVQRXZVV1.....................',
+        '................1QRRVVP1.1RQQXVVVQRXZVV1....................',
+        '................1QRRVP111RRQRZVVRRQRXVV1....................',
+        '................1QRVP11RXQRRVV11RXQQRRV1....................',
+        '................1QVP1.1RQQRVV1.11RRQQVV11...................',
+        '................1QP1...1RQRV1...11RRQV1RR1..................',
+        '.................11....111111....11111VVVR1.................',
+        '..................11.11RRVV1.......11RVVVV1.................',
+        '.................1bb1RRVVV1..........111VV1.................',
+        '.................1bc1VVV11...........1db1V1.................',
+        '................1cee1V11.............1bc1V1.................',
+        '.................11111...............1cee1..................',
+        '.....................................1eeee1.................',
+        '......................................1111..................',
+        '............................................................',
+        '............................................................',
+      ],
+    },
+    588: { // 宵角ミュゼル
+      palette: [null, '#191622', '#c1acbd', '#79778e', '#c4c8d6', '#96809c', '#fff8df', '#3a3346', '#705a82', '#e3e5e9', '#9fa5bd', '#c1a4ce', '#8c739d', '#c5a3b1', '#76627b', '#776782', '#ddd9e8', '#b497bf', '#987fa7', '#fff9ed', '#a19bb2', '#ffe4cd', '#c84657', '#fff7e9', '#d29a9c', '#efaba5', '#aa91bd', '#624c76', '#55455f', '#352c43', '#f2e4ee', '#65c0c2', '#368496', '#43364f', '#726579', '#77687f', '#a18b9f', '#574759', '#3a2d43', '#57445f', '#776186', '#a48caf', '#65516e'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '...........1...............................111111111........',
+        '..........121...........................1113334444331.......',
+        '.........1551.........................1133446666664431......',
+        '........15781........................1344666699444AA331.....',
+        '........17B81.......................134669443331133A931.....',
+        '........17BB81.....................134664331111..113331.....',
+        '........17BBB81....................14664311........1331.....',
+        '........17BBCC81..................1366431.........1D11......',
+        '........17BBCCC81......1..........136431.........1DEE1......',
+        '.......17BBBCCCC81....1F1.......1.16311........11DEE1.......',
+        '.......17BBBCC8CC81..17F1..11.11F1161.........1DDEE1........',
+        '.......17BBCCC8CCC8117FF111GG1G11111.........1DEEE1.........',
+        '......17BBHCC8CCICC17FF71GGJJJGGKK171.......1DEE11..........',
+        '......17BHHC8CCIIC17FF771JJJJGGGGLK171.....1DEE1............',
+        '......17BHHC8CCCI17FFF771JJGGJJGGLK1F1....1DEE1.............',
+        '......17BCC8CCCC817FF7771JGGKGLLKLK1F1...1DEE1..............',
+        '......17CCC8CCC8CC17F7771KGGLLLKL11F71.11DEE1...............',
+        '......17CC8CCC8CCCC177771GGL11LL1M17111DDEE151..............',
+        '......17C8CCC8CC78811111JGGLLMNLLO111LL1EE15B71.............',
+        '......17711CC8Ce811..1KGJGKLPLLLL1..1LNL1185BB71............',
+        '......171.1C77eeee11.1KGGKKLLLLLO1.11LOO18BB5HB71...........',
+        '.......1..1771geeeef11KGGK11KOOO1.1DE1O118BBH5BB71..........',
+        '..........17111ggeeee1K111LO111111DEE11118BBBB5BB71.........',
+        '...........1...11ggdee11QRLLORR1DDEE1STT1C8BBHB5B71.........',
+        '.................1dgd11Q11QQSU1DEEE11ST1CCC8CCB5BB71........',
+        '..................1d1111DD1VW1DEE111STT11CCC8CCB5B71........',
+        '...................111SS1DE11DEE11SSTTT117CC8CCB5BB71.......',
+        '...................1Q1ST1DE1DEE111STT11SQ177C8CCB5B71.......',
+        '...................11STT111DEE11R1111TSSQ111777CB5BB71......',
+        '..................1Q1ST1LL1EE1W1T1.1RTXYYQ1.1177CB5B71......',
+        '..................1Q1S1LNL1E1W1QQ1.1RTXSYQ1...177C1571......',
+        '..................1QY11OOL11W1QSYT11RTXSYQ1....171.171......',
+        '.................1QSS1D1O11111SQYST11RTTSSQ1....1...1.......',
+        '.................1QS1DEE11QQ1.1SSQYST1TTSSQ1................',
+        '................1QS1DEE1SYQX1..1SYQSST1TTSSQ1...............',
+        '................111DEE11SQTT11..1SSQTT1TTSSQ1...............',
+        '................1DDEE11.1QT1SS11S1SQT11RTSSQ1...............',
+        '...............1DEEE11...11STT11ST111..1RTSQ1...............',
+        '..............1DEE111....1STT1.1STTTS1..1RTQ1...............',
+        '.............1DEE1R1.....1ST1...1STTTS1..1RQ1...............',
+        '.............1DE111.....1STT1....1STTTS1..11................',
+        '..............11.......1STT1......1STTT1....................',
+        '.....................11STT1........111T1....................',
+        '....................1ZZ1T1.........1aZ11....................',
+        '....................1Zb1T1.........1Zb11....................',
+        '...................1bcc11..........1bcc1....................',
+        '....................1111...........1cccc1...................',
+        '....................................1111....................',
+        '............................................................',
+      ],
+    },
+    604: { // 星影リゼル
+      palette: [null, '#191622', '#776782', '#3a3346', '#fff8df', '#c1acbd', '#ddd9e8', '#96809c', '#fff9ed', '#a19bb2', '#c4c8d6', '#e3e5e9', '#9fa5bd', '#c1a4ce', '#ffe4cd', '#705a82', '#b497bf', '#8c739d', '#694458', '#fff7e9', '#c84657', '#efaba5', '#d29a9c', '#76627b', '#c5a3b1', '#aa91bd', '#f2e4ee', '#55455f', '#624c76', '#f6e3cd', '#352c43', '#65c0c2', '#70637b', '#43364f', '#368496', '#77687f', '#574759', '#a18b9f', '#3a2d43', '#57445f', '#776186', '#a48caf', '#65516e'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................1...............................',
+        '...........................121.......1..............1...1...',
+        '..........................1321.11111121............141.151..',
+        '.........................1322116666611311.........14411771..',
+        '........................132231688886691231.......144A17731..',
+        '.......................13223318888886691231....1144BC1D31...',
+        '......................132223318886668869121.11114BAA1DD31...',
+        '..................1...1322333186688668E91211FF144AA1DD31....',
+        '.................171...132333189688EE9E91317F144AA1GDD31....',
+        '................1771....133331966EEE9EE911HF144AA1DDDD31....',
+        '...............13D711....1111866EIIEEI111HHH14AA1HHHDD31....',
+        '..............13DD7Ff111..196866EEJKEEK1FHHH1AA11HHHDDD31...',
+        '.............13DG7DDFfff11196869ELEJEEM11FFH111N1FHHHDDD31..',
+        '............13DD7GDDFeeeff196699EEEEEM1OO11F1ON1HHFFHHDD31..',
+        '...........13DD7DDDDFFeeee19669119MMM11ON111ONN1HHHHFHHH31..',
+        '...........13D7DGDDFH11gge196891M11111111EE1111F3HH111FH31..',
+        '..........13DD7DHHFH1PP1dg196691QRRP11S11EJE1O1133H1..1331..',
+        '..........13D7DHHFH1PPRS11S19691PPR1OO111EMM1NOO131....131..',
+        '.........13DD7DHHFH1PRRS1S1R19911R1NOT1R11M11ONNO1......1...',
+        '.........13D7DHHFH1PRRRS111RU11N1R1NO111ON11.11ON1..........',
+        '........13DD7DH3331PRRUS11RUU111R1V1111ONN11...11...........',
+        '........13D7DH3311PWWXUS11RU1RRR1VTY1.1ON11.................',
+        '........1371H331.1PWRX111RUU1SYPS1Y1.1ONN1..................',
+        '........131.131..1PWR1EE1UU1RVYPRR1U1ONN1...................',
+        '.........1...1..1PRR1EJE1U1WWPPRRRXU1ON1....................',
+        '................1PRR1MME11WPRPRRRXUU111.....................',
+        '...............1PRRUU1M11RWPRUUPRWXUU1......................',
+        '...............1PRRUUS111RPPWUUUPRWXUU1.....................',
+        '...............1PRRUS111RRPRXUURRPRWUU1.....................',
+        '...............1PRUS11RWPRRUU11RWPPRRU1.....................',
+        '...............1PUS1.1RPPRUU1.11RRPPUU11....................',
+        '...............1PS1...1RPRU1...11RRPU1RR1...................',
+        '................11....111111....11111UUUR1..................',
+        '.................11.11RRUU1.......11RUUUU1..................',
+        '................1ZZ1RRUUU1..........111UU1..................',
+        '................1Za1UUU11...........1bZ1U1..................',
+        '...............1acc1U11.............1Za1U1..................',
+        '................11111...............1acc1...................',
+        '....................................1cccc1..................',
+        '.....................................1111...................',
+        '............................................................',
+        '............................................................',
+      ],
+    },
+    648: { // 月詠メルフィ
+      palette: [null, '#191622', '#c1acbd', '#96809c', '#705a82', '#3a3346', '#c1a4ce', '#ebc675', '#fff2c1', '#8c739d', '#776782', '#ddd9e8', '#a19bb2', '#fff9ed', '#987fa7', '#b497bf', '#976e4d', '#f7da91', '#c99b61', '#ffe4cd', '#fff7e9', '#c84657', '#d29a9c', '#efaba5', '#624c76', '#55455f', '#aa91bd', '#c5a3b1', '#76627b', '#f6e3cd', '#352c43', '#65c0c2', '#786478', '#368496', '#b39e96', '#43364f', '#574759', '#77687f', '#3a2d43', '#a18b9f', '#5e4c6b', '#7b648a', '#4e405b', '#57445f', '#776186', '#a48caf', '#65516e'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '...................................................1........',
+        '..................................................121.......',
+        '..................................................1331......',
+        '..................................................14531.....',
+        '..................................................14651.....',
+        '..............................................111146651.....',
+        '............................................11777166651.....',
+        '..........................................1177881996651.....',
+        '..........................1..............17788819996651.....',
+        '.........................1A1.......1....1778881999966651....',
+        '..1.....................15A1...111111...1788819949966651....',
+        '.121...................15AA1111BBBBC111.1788719949996651....',
+        '.13311.............1..15AA51BBDDDDBBC151178871E99499F6651...',
+        '.15334111.........18115AA551DDDDDDDDBC151G8HI1EE9149FF651...',
+        '..1566344111......1815AAA551DDBBDBDDJC1A1GH7I1E91819FF651...',
+        '..1566663344111..18715AA5551DBDDBJJCJC1A1GGHH711871499651...',
+        '...1566FF66344411887815A5551BBBDBJCJJC1511GG77HH719499951...',
+        '...1566FFFF69943418781155551BBBJJJJ11151551GG777199949951...',
+        '...1566669E9999499181111111CBBJ11KJJL11551111GG1949994951...',
+        '...1566999999499999144411CBDBBJJLJJJM155111ii115949911551...',
+        '..15666999944999994994511CBDBCJNJJJM1.151jiiiik155591.151...',
+        '.156669994499999449999511CBDCCJJJMM1..1jiiiikk1111551..1....',
+        '.15669944999994499999ijj1CBBC11CM11.11ii1h3111....151.......',
+        '.1599949999554999991ki1i1CBBBC111O1111i1J11J1......1........',
+        '.1594111995411999h1J11J1i1CBBC1PPQ11O111JMJJ11..............',
+        '.1551..19551..15551JJMJ1111CCC1QQ1RR11111MJ1151.............',
+        '.151....151..1155111JM111PP1111Q1SRT1PP11MO11651............',
+        '..1......1..15151F61OM11PUU1RS1P1SR11PUPP11136651...........',
+        '...........15661666611UPUU1P11P1V11111PUUU16636651..........',
+        '...........15636F66491PUU1UWPP1VTX1OU1PUUU16F63651..........',
+        '..........156636994991PU11OYOXQ1X11OUZ1PU1499636651.........',
+        '..........15636994999e11g1PPVXQP1UU1UZP111949963651.........',
+        '.........15663699499gg5551WWQQPPPZUU1UUPPQ1499636651........',
+        '.........15636994955555551WQPQPPPZUU1UUPPQ1949963651........',
+        '........15663695551111111PWQPUUQPWZUU1UUPPQ1559636651.......',
+        '........1563695511.....1PQQWUUUQPWZUU1UUPPQ1155963651.......',
+        '........15319551......1PPQPZUUPPQPWUU1OUPPQ1.15591351.......',
+        '........151.151......1PWQPPUU11PWQQPPU1OUPQ1..151.151.......',
+        '.........1...1.......1PQQPUU1..1PPQQUU11OUQ1...1...1........',
+        '....................111PQPU1...11PPQU1..1OQ1................',
+        '...................1ab11111.....11111....11.................',
+        '..................1cca1UU1......1PU1........................',
+        '..................1cc1U11.......11U1........................',
+        '...................1111........1db11........................',
+        '...............................1bb1.........................',
+        '...............................11bc1........................',
+        '................................11cc1.......................',
+        '..................................11........................',
+        '............................................................',
+      ],
+    },
+    666: { // 月詠ザフィナ
+      palette: [null, '#191622', '#c1acbd', '#96809c', '#3a3346', '#705a82', '#c1a4ce', '#8c739d', '#776782', '#ba9ae1', '#ddd9e8', '#e6d6ff', '#a19bb2', '#fff9ed', '#b497bf', '#987fa7', '#fff4e7', '#8367b5', '#ffe4cd', '#dbc4f3', '#c84657', '#fff7e9', '#d29a9c', '#efaba5', '#aa91bd', '#624c76', '#55455f', '#f2e4ee', '#c5a3b1', '#d1c89d', '#76627b', '#f6e3cd', '#352c43', '#43364f', '#776181', '#77687f', '#a18b9f', '#574759', '#3a2d43', '#5e4c6b', '#7b648a', '#4e405b', '#57445f', '#776186', '#a48caf', '#65516e'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '.......1....................................................',
+        '......121...................................................',
+        '.....1331...........................................1.......',
+        '....13451..........................................121......',
+        '....14651..........................................1331.....',
+        '....146651.........................................15431....',
+        '....1466651........................................15641....',
+        '....14667751.....................1................156641....',
+        '....146677751...........1.......181......1.......1566641....',
+        '...14666777751.........1811.11..1841....191.....15776641....',
+        '...146667757751......11411A1AA1118841...1B911..157776641....',
+        '...1466777577751...11481CAADDDAA148841.11B919115777766641...',
+        '..1466E77577F7751.11481CAAAADDDD144884191BG9H157757766641...',
+        '..146EE7577FF777119181CIAADDAADD144888419BGG9H17757776641...',
+        '..146EE75777F551919181CICIIACAAD144488419BJGG9H177577E6641..',
+        '..14677577775571H9G141CIICIIIAAC14448411H9GJ9H1FF7757EE641..',
+        '..1477757775771H9GGB14111II11IAA144441..1H99H15F77757EE641..',
+        '..147757775771H9GGJB911KIILKIIAAD1111...11HH17557777577641..',
+        '..1475777577451H9JG9H11MIIIINICADAC1...1441177775777577741..',
+        '..144117757451h1H99H1111MIIIIICCAAC1..1444hhh7777577757741..',
+        '..141.17444111jj1HH1ihh11MMMC11CAAC1..14i1hhh5547757775741..',
+        '...1..14411..11gg11jhiih11111111111.11i11I1hjj154757711441..',
+        '......141......1133gjh11OOPPIMPOPP11i11IIM13g111144471.141..',
+        '.......1.......1413gg11O11QQOOR11PP11O1IM11641...11441..1...',
+        '..............141I111111SS1OO91SS111PQ111S16641....141......',
+        '.............1461MII11TT1SU1O1USV1TT1111US13E641....1.......',
+        '............146631MI11TW1SU1P1US11TWTTTW116E36641...........',
+        '...........14663611111TW111O1911P11TWWWW1166636641..........',
+        '...........14636E1US1TWW11X19VH1W1d11TW1YO16E63641..........',
+        '..........1466367711TWW1P1OO1H1OO141P11QYO177636641.........',
+        '..........146367751O1TW11PQYO1OQYW11PWXQYO157763641.........',
+        '.........146636771OQQ11P1QYOW11QYQW11PWWQQO177636641........',
+        '.........146367751OQQWWP1QYOOW11QQYQW1WWQQO157763641........',
+        '........146636741OQQWWP1QYOOXW1.1QYQQW1WWQQO147636641.......',
+        '........146367441OQQWWP1QOOWW11.11QOWW1WWQQO144763641.......',
+        '........143174411OQQWP1.1OWW1QQ1Q1QOW11PWQQO114471341.......',
+        '........141.141.1OQWP1...111WWW1QW111..1PWQO1.141.141.......',
+        '.........1...1..1OWP1....1QWWWW11QWQ1...1PWO1..1...1........',
+        '................1OP1....1QWWWW1..1QW1....1PO1...............',
+        '.................11....1QWWWW1...1QWQ1....11................',
+        '.......................1QWWW1.....1QWQ1.....................',
+        '.......................11WW1.......1QW11....................',
+        '......................1Za1W1........11ZZ1...................',
+        '......................1bZ1W1........11bZ1...................',
+        '.....................1ccb1W1.........1ccb1..................',
+        '....................1cccc1W1..........111...................',
+        '.....................111111.................................',
+        '............................................................',
+      ],
+    },
+    667: { // 羽鈴ティルエ
+      palette: [null, '#60432e', '#ffd675', '#191622', '#fff4c0', '#f4f3f6', '#d99638', '#d9d6e2', '#a49eb2', '#bcb8ca', '#f8dc7d', '#c4bcca', '#fff5b0', '#c6a365', '#efedf2', '#e6e1e7', '#fffbfa', '#ffe4cd', '#fff8df', '#ada3b5', '#a6b4ca', '#c4c8d6', '#79778e', '#5186b0', '#fff7e9', '#efaba5', '#d29a9c', '#ce9e62', '#976e4d', '#ebc675', '#f7dfa5', '#fff9ed', '#dbd8de', '#f9f3f0', '#efd090', '#9e794d', '#89664e', '#b2a79d', '#98919e', '#368496', '#dec28e', '#a88560', '#a09bad', '#cfc9c9', '#dcd8db', '#f8ead5', '#252432', '#e4dfe8', '#c2baca', '#f5f1f5', '#aba4b8'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '..............................11............................',
+        '.............................12211111...............3.......',
+        '............................12414444411............353......',
+        '...........................1241.11111221..........3553......',
+        '............................1661.....1261........35573......',
+        '.............................11611111.1261......355583......',
+        '...............................1666661661......3555783......',
+        '................................11111611......3555593.......',
+        '.....................................1.......35555573.......',
+        '...........................................3355755783.......',
+        '................................33333.....3555785583........',
+        '..............................33AAAAA33.3355558B5783........',
+        '.............................3AACCCCAAD3555557BE593.........',
+        '............................3AACCCCCCAAD35775975553.........',
+        '.33.........................3ACCCCAAACCAD38855957583.....33.',
+        '3FG333.....................3DACCAACCAACHD3BB75E58783..333II3',
+        '3JFGGG333..................3DACCDACCHHDHD3759575B83333IIIK3.',
+        '.3BGGGGGG333kkkkkk.........3DACDAAHHHDHHD397E595533IIIKKK3..',
+        '.3JFGGFGGGGGlllllkkkkk.....3DACAAH33HH33355855533IILKKMM3...',
+        '..3BGGBFGGGGlllllllllkkk...3DACAAHHNOHHN3558553MKLKKMM33....',
+        '..3FFGEBFFGGGllmlllllllkkk.3DACADHPHHHHQ3558753MMKMM33......',
+        '...3BGGEBBFGGlllmmmllllllkk3DAADDHHHHHQ38558333MM333........',
+        '..3JFGGGEBBFFGlnnmmmmmlllll3DAAD33DQQQ383333RRS3333.........',
+        '...3JFFGGEEBBFlllnnnnm33lll3DACD3Q333333HH3TSSS3333.........',
+        '....3BBFGGGEEBFlllooo3UU3mm3DAAD3VWXU333HOH3S333373.........',
+        '....3FFBGFFGGEBFFlll3UYXZ33a3DAD3YYW33T3HQQ3333.383.........',
+        '....33JFFBBFFGEBBFll3YXXZ3a3X3DD3333TTSS3Q33373..3..........',
+        '...3GG3JBFFBBFGEBBF3UXXXZ33Wbc333TTTSSS33333383.............',
+        '...3GFJ3JJJFBBFGEBJ3YXWbZ33Wc33TTSSSS333Wb3..3..............',
+        '...3FJ333333JJJFFB3UXWbca3W33TTSSS3333b3Wb3.................',
+        '...3J3.3GFJJ333JJJ3YXWc3333TTSSS333d3cb3Wc3.................',
+        '....3..3FJ333GF3333YWW3HH3TSSS33UXX3b3cX333.................',
+        '.......3J3..3FJ3.3UW33HOH3SS33UUXXWbbc3bXXU3................',
+        '........3...3J3..333T3QQH333UXYXWXWbb3cbXXY3................',
+        '.............3..33TTSS3Q33XWYWbbYWWbbb3cbXXU3...............',
+        '..............33TTSSS33333XYYWbbbYWWbbb3bXXY3...............',
+        '............33TTSSS33a333WXYWbccXXYWWbb3bXXY3...............',
+        '..........33TTSSS33ba33XWYXWbc33WXYYWWb3abXY3...............',
+        '........33TTSSS33Uca333WYYWbc3..3WXYYbc33abY3...............',
+        '......33TTSSS33.3Y33efg3WYWc3....3WWYc3hh3aY3...............',
+        '.....3TTSSS33....3igggg33333......3333jhhh33................',
+        '.....3TSS33.....3efff33..............3jhh3..................',
+        '......333......3fff33................3jhh3..................',
+        '................333...................3ef3..................',
+        '......................................3jhh3.................',
+        '......................................3efff3................',
+        '......................................3ffff3................',
+        '.......................................3333.................',
+        '............................................................',
+        '............................................................',
+      ],
+    },
+    668: { // 羽鈴セレスカ
+      palette: [null, '#60432e', '#ffd675', '#fff4c0', '#d99638', '#191622', '#fffbfa', '#e6e1e7', '#f8dc7d', '#ada3b5', '#fff5b0', '#c4bcca', '#65c0c2', '#c6a365', '#368496', '#f4f3f6', '#efedf2', '#a49eb2', '#ffe4cd', '#d9d6e2', '#57546e', '#fff7e9', '#bcb8ca', '#5186b0', '#efaba5', '#f0ce84', '#d29a9c', '#ce9e62', '#fff2c1', '#89664e', '#f7dfa5', '#976e4d', '#ebc675', '#fff9ed', '#f9f3f0', '#efd090', '#dbd8de', '#b2ab9d', '#98919e', '#9e794d', '#795c50', '#dcd8db', '#a09bad', '#cfc9c9', '#f8ead5', '#a7a3ad'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '...............................11...........................',
+        '..........................11111221..........................',
+        '........................11333331321.........................',
+        '.......................12211111.1321........................',
+        '......................1421.....1441.........................',
+        '.....................1421.11111411..........................',
+        '......................1441444441............................',
+        '.......................11411111.............................',
+        '.........................1..................................',
+        '.......................................................55...',
+        '...........................5555.5...................555675..',
+        '..........................58888585...............555666795..',
+        '.........555............5588AAA8A85...........555666666B5...',
+        '........5CCC5....55....5D88AAAAAA85.......555566666766795...',
+        '........5ECC5...5FF5..5D88AAA88AA8D5...555666666667B66B5....',
+        '........5C55...5FFFF55D88AA8D888A8D5.5566666666677BG6775....',
+        '.......55C5...5FFFFFH5DIAAAD888AA8D5566667766667BBG66B5.....',
+        '......5CCC5..5FFJFFFB5DIDIIII88DA8D566667BB6677BBG666795....',
+        '......5CCC5.5FFFHFFFG5DIIDIKKI88A8D56667BBG67BBGG667795.....',
+        '.......5E5.5FFFFBFFJJB55KIILII88A8D5666BBG67BGG6667BB5......',
+        '........5.5FFF55FFJMMF5NIINIOID888D5776GG77BG66776B775......',
+        '..........5FF5PP5JHFGF5QIILIIIDD88D599667BBG677BB77955......',
+        '.........5FFF5RSP5HFFF55QIIQD55DD55.5556BBG67BB77B95665.....',
+        '.........5FFJB5RSP5FF5PS5QQ5558D5T5.5UU59G67BB799959765.....',
+        '........5FFFHF5VRW5555WWV55UXC55W555TYZU577999555555975.....',
+        '........5FFJBFJ5VWPSSPWR55V5C5VWS5YY5YYZ59955599765.595.....',
+        '.......5FFJHFJM55RS5SWS5I55I55VW5abc5YYYU5576555975..5......',
+        '.......5FJHBJMF5I55I5WS5IQII55555ab5dbYYZ55975..595.........',
+        '.......5JH5JHFF5IIQI5WSP5QI55Y55abc5dbbYYU5595...5..........',
+        '.......5H55HHFJ55IQ5SWSW5QT55bYabb55dbbYYZ5.5...............',
+        '........5..5HJH55TQ5SWSRV5555acbbc55TbbYYZ5.................',
+        '...........5HH55555RWRRV5YYaU55ac5b55dbbYYU5................',
+        '............55...5VeRVe55YYZYYY55bb55TbbYYZ5................',
+        '..................555555aYYZaabUabbb55TbcYYU5...............',
+        '........................5YYZZYabbZabbb5c5aYZ5...............',
+        '.......................5YaaZYabbcaZabb55f5YZ5...............',
+        '......................5YaZZYabbc55YZaab5g5YZ5...............',
+        '......................5aZZYabbc5f5aYZbc5g5bZ5...............',
+        '.......................5aZaacc5.5f5aZc5hg5TZ5...............',
+        '........................555555..5ff555hg5.55................',
+        '........................5ihh5....5fffhg5....................',
+        '........................5ih5......5hhg5.....................',
+        '........................5ih5.......555......................',
+        '.......................5ihh5................................',
+        '.......................5fj5.................................',
+        '.......................5jj5.................................',
+        '........................55..................................',
+        '............................................................',
+      ],
+    },
+    675: { // 羽鈴メレセア
+      palette: [null, '#60432e', '#ffd675', '#fff4c0', '#d99638', '#191622', '#ddd9e8', '#e6e1e7', '#fffbfa', '#fff9ed', '#a19bb2', '#ada3b5', '#f0ce84', '#ce9e62', '#c4bcca', '#ffe4cd', '#a9a8b4', '#976e4d', '#efedf2', '#57546e', '#a49eb2', '#fff7e9', '#5186b0', '#f4f3f6', '#efaba5', '#d29a9c', '#d9d6e2', '#bcb8ca', '#f7dfa5', '#89664e', '#9e794d', '#ebc675', '#efd090', '#f9f3f0', '#fff8df', '#dbd8de', '#fff2c1', '#c4c8d6', '#b2ae9d', '#e6cc91', '#98919e', '#6a574e', '#79778e', '#368496', '#65c0c2', '#795c50', '#a09bad', '#dcd8db', '#f8ead5', '#cfc9c9', '#dec28e', '#a88560'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '.........................11.................................',
+        '........................12211111............................',
+        '.......................12313333311..........................',
+        '......................1231.11111221.........................',
+        '.......................1441.....1241........................',
+        '........................11411111.1241.......................',
+        '..........................1444441441........................',
+        '...........................11111411.........................',
+        '................................1...........................',
+        '............................................................',
+        '............................55.5............................',
+        '.55.......................55665655..........................',
+        '578555...................56699966A5..55.....................',
+        '5B7888555...............5699996666A55CD555..................',
+        '.5E888888555...........56999669966FA5GHD555.................',
+        '.5B7887888885555.......569966A6FFAFA55DHDD55................',
+        '..5E88E788888888555....566A66FFFAFFA555DHHD55...............',
+        '..5778IE7788888888855.5A6966FJJFFJ555KE55DHD55..............',
+        '...5E88IEE7888877888855A6966FFLMFFM5EKINN5DHD55.............',
+        '..5B7888IEE7788EE788885A696AFOFLFFP5NEQQNN5CH5N5............',
+        '...5B7788IIEE78IEE78885A66AAFFFFFP5QNNRRQN5DHD5N5...........',
+        '....5EE7888IIE78IEE8885A66A55APPP55KQNINKQN5CH5N5...........',
+        '....577E87788IE77II888B5555FP5555555KQNNEKN5DHD5N5..........',
+        '....55B77EE778IEE788555.5STFFPGUSTU5KKQNNEQN5CH5N5..........',
+        '...5885BE77EE78IEE85SS55S5555G9S55TT5KKQQNRN5VH5N55.........',
+        '...587B5BBB7EE78IE5SWX555V5FF5W5VV5555KKKNN55DH55Y5.........',
+        '...57B555555BBB77B5WXZ5XX5FLF55HVa5XXX55555FF5H55bY5........',
+        '...5B5.587BB555BB5SXZ5Zcc5PPF5dddddddddddd5FLF5d5bbY5.......',
+        '....5..57B55587555WX5Zccee5P5fffffffffffff5FPP5f5gb5........',
+        '.......5B5..57B55SXX5Zee55555Gah55...5555555P5H55g55........',
+        '........5...5B5.5WXZc555SSUiU5G55.........5K5CH5.55.........',
+        '.............5..5WXZccT5XZShSSGZc5.........55DH5............',
+        '...............5SXZccU55ZW555XWGZc5........5CHj5............',
+        '...............5WXZccT5XWW5.5ZXWGZc5.......5DH5.............',
+        '..............5SXZccU5XZWc55.5ZXWGZc5.....5CHj5.............',
+        '..............5WXZccT5ZWce5k555ZXWGc5.....5DH5..............',
+        '..............5WXZcT5.5We5k5..55ZWeG.....5DHj5..............',
+        '..............5WZcT5..555kk5...5555G5..55DHj5...............',
+        '..............5WcT5..5lkkk5.....5mnnG55DDHj5................',
+        '..............5WT5..5lkkk5.......5mnnGDHjj5.................',
+        '...............55..5lkkk5.........5m5VHj55..................',
+        '...................5lkk5..........5m5DH5....................',
+        '..................5opk5...........5op55.....................',
+        '..................5lk5............5mn5......................',
+        '.................5opp5............5opp55....................',
+        '................5pppp5............5ppppp5...................',
+        '.................5555..............55555....................',
+        '............................................................',
+        '............................................................',
+      ],
+    },
+    686: { // 暁奏リュミオ
+      palette: [null, '#60432e', '#fff4c0', '#ffd675', '#191622', '#d99638', '#f4f3f6', '#fff2c1', '#d9d6e2', '#ce9e62', '#a49eb2', '#976e4d', '#795c50', '#ebc675', '#f0ce84', '#bcb8ca', '#ddd9e8', '#72b6d8', '#a19bb2', '#fff9ed', '#526ba9', '#dbede1', '#ffe4cd', '#c4bcca', '#efedf2', '#fffbfa', '#e6e1e7', '#5186b0', '#d29a9c', '#fff7e9', '#efaba5', '#f7dfa5', '#89664e', '#d9e2e8', '#f9f3f0', '#efd090', '#ada3b5', '#9da7b2', '#8394a6', '#9e794d', '#a09bad', '#dcd8db', '#f8ead5', '#cfc9c9', '#a7a3ad', '#e4dfe8', '#c2baca', '#252432', '#f5f1f5', '#aba4b8'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '...............................111..........................',
+        '...........................11112331.........................',
+        '.........................11333321231........................',
+        '........................13311111.1231.......................',
+        '....4..................1531.....1551........................',
+        '...464................1531.11111511......44.................',
+        '...4664................1551555551......447744...............',
+        '...48664................11511111.....4499779944.............',
+        '...4A6664.................1.........499BCD9BC994............',
+        '...4A86664.................44444...4EB444DB444BE4...........',
+        '....4F66664.......444...444GGGGG44.4D4..4DB4..4D4...........',
+        '....48666664.....4HHH4.4IIGGJJJJGG44HE4.4HE4.4EH4...........',
+        '....4A86686644...4KHH44IGGGJJJJJJGG4DLE44HH44EHD4...........',
+        '.....4A66A86664..4H44.4IMJJGGGJJJJG477D49L794DL74...........',
+        '.....4A86NAj666444H4..4IMJGGJJGGJJG444K44KK44K444...........',
+        '......4F6ON8jjj4HHH4..4IMIMMJJGIJJGI4.4.4444P4PPP4..........',
+        '......46668Fjjj4HHH4...44MIMMMGGIJGI4...4EB4PjjjjP4.........',
+        '.....4A686F66kjj4K44lll4R4MM44MGGJGI4.ll4DB4jjjjjPP4........',
+        '.....4A8A6O68jkjj4jjjjl4SMMTRMMGGJGI4llj4DB4jjjjjPPP4.......',
+        '......4AN686F6mkkjjjjjjj4MMMMUMIGJGI4jjj4DB4jjkkkPPPP4......',
+        '.......466F6O8Fmkkkkkjjj4SMMMMMIIGGI4jjj4DB4kkkkkjPPP4......',
+        '......4A66866A66mmkkkkkkj4SSSI44IGGI4jkk4DB4mmmkkkQPPP4.....',
+        '......4A88F66A66Anmmnn44444444V4IJGI4kkk4DB4nnnnjjNQPP4.....',
+        '.......4AF688A66AA4nn4V4W44VXJY4IGGI4kkj4DB4QQPNQPPNPPP4....',
+        '.......4468AAA86N4M44M444DD4ZJH4IGII4jj449B4NNQPNQPNQPP4....',
+        '......44A8AA4AF684MMSM4YY4DB4H44II44Y44MM4B4aNNPNNQPNQPP4...',
+        '......44AA444N88A44MS44Xb4DB4Z4B444XbY4MTM444aNQOPNQNaQP4...',
+        '......484444A8AA444WS4Xbc444V4H44444Xb4MSS44.4aNQPPNQ4aQ4...',
+        '......4A4.44AA4466444bbb44bX4H7K44.4XbY4S4B4..4aNQPNa44a4...',
+        '.......4..484444684V4Xbc44WZd4K4d44.4Xbc4EB4...4aaQN4..4....',
+        '..........4A4..48A4Z4Xc4W44YYV4VXbb44Xc44DB4....44aa4.......',
+        '...........4...4A4VYY44d44YYXZVYXbbb444.4DB4......44........',
+        '................44ZYXbbW44YYZYYYXXbb4...4DB4................',
+        '................4VYXbbd44YYXZYXbZXbbb4..4DB4................',
+        '................4ZYXbbW44YYZZYXbbZXbbb4.4DB4................',
+        '................4ZYXbW44YXXZYXbbcXZXbb444DB4................',
+        '................4ZXbW44YXZZYXbbc44YZXXb44DB4................',
+        '................4ZbW4.4XZZYXbbc4e4XYZbc44DB4................',
+        '................4ZW4...4XZXXcc4ffe4XZc444DB4................',
+        '.................44.....4444444ffef4444.4DB4................',
+        '.........................4ghh4.4fffhe4..4DB4................',
+        '.........................4gh4...4hhe4...49B4................',
+        '.........................4gh4....444.....44.................',
+        '.........................4gh4...............................',
+        '.........................4fii4..............................',
+        '..........................4ii4..............................',
+        '...........................44...............................',
+        '............................................................',
+      ],
+    },
+    715: { // 天環ソラネ
+      palette: [null, '#60432e', '#fff4c0', '#ffd675', '#d99638', '#191622', '#f4f3f6', '#fffbfa', '#d9d6e2', '#e6e1e7', '#a49eb2', '#c4bcca', '#ada3b5', '#bcb8ca', '#f8dc7d', '#fff5b0', '#c6a365', '#fff8df', '#c4c8d6', '#efedf2', '#ffe4cd', '#a6b4ca', '#57546e', '#5186b0', '#fff7e9', '#efaba5', '#d29a9c', '#f0ce84', '#ce9e62', '#976e4d', '#89664e', '#f9f3f0', '#f7dfa5', '#fff9ed', '#ebc675', '#efd090', '#dbd8de', '#b2aa9d', '#98919e', '#65c0c2', '#fff2c1', '#368496', '#9e794d', '#795c50', '#a09bad', '#f8ead5', '#cfc9c9', '#dcd8db', '#dec28e', '#a88560', '#252432', '#e4dfe8', '#c2baca', '#f5f1f5', '#aba4b8'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '..............................1.............................',
+        '.............................121............................',
+        '......................1.111113231...........................',
+        '.....................1212222211231..........................',
+        '....................132311111..1431.........................',
+        '....5..............14311.....11441.....................5....',
+        '...565............1431..111114411.....................575...',
+        '...5665............144114222411......................5775...',
+        '...58665............114411111.......................57795...',
+        '...5A6665.............11...........................5777B5...',
+        '...5A86665..............55555.....................57779C5...',
+        '....5D66665............5EEEEE55..................57777B5....',
+        '....58666665..........5EEFFFFEE5................55777795....',
+        '....5A86686655.......5GEFFFFFFEE5.............555H5779C5....',
+        '.....5A66A86665.....5GEFEEEFFFFE5..........oo575HH577B5.....',
+        '.....5A86BA666655..5GEFEEFFEEFFEG5.......oo5pp5HHI579C5.....',
+        '......5D6JB8666665.5GKFKKFFEGFFEG5.....oooppp5HHIL57B5......',
+        '......56668D68866655GKGGKKKEEGFEG5.ooooopppp5HHIL57775......',
+        '.....5A686D66AA66665GKKKKMMKEEFEG5ooppppppq5HHIL5B797B5.....',
+        '.....5A8A6J68BB8866655MKNOKKEEFEG5opppppqq5HHIL5pJ7B9C5.....',
+        '......5AB686D68DD8865NKKOKPKGEFEG5ppp55qq5HHIL5p797BC5......',
+        '.......566D6J8D6JDD65QKKKKKKGGEEG5pp5RS555HIL5pJ7B775.......',
+        '......5A66866A6688J665QQQQG55GEEG5pq5STSS55L55B77977B5......',
+        '......5A88D66A66AA865U55555V5GFEG5ppp5STTSS555B77B99C5......',
+        '.......5AD665566AAA655SR5WWX5GEEG55ppp55STTSS5C997BC5.......',
+        '.......55685RS56BAA5VV5YT5Z55GEG5V55pp5555STTS5CB9755.......',
+        '......55A8A5STS56A5abc5ST5Z55GG5abV5q5KK5T55ST55CC9B55......',
+        '......55AA555RT5555ac5555a5d55555ab5q5KOK55p55B555CC55......',
+        '......5855555ST5KK5c55cb55def5bb5abV55KQQ5qppp9B555595......',
+        '......5A5.55A55KOK55SS5b5g5f5gZg55aba55Q55qqpppC55.5C5......',
+        '.......5..58555QQK5STh5c5VV5fWabb5ac5ST55rrqqpp5955.5.......',
+        '..........5A5655Q55Th5b5aVVWZVabbb55RTh57ssrqqp5C55.........',
+        '.........56555S55HI55bbU5VVZVVVaabb5ST5B99pqpppB5775........',
+        '.........565RSTh5IHI5cg5VVaZVabZabbb555CBB95B9pB9775........',
+        '........5665STh55LHHI5U5VVZZVabbZabbb5.5CBB7BB97B9775.......',
+        '........568A555655LHHI5aVaZVabbbaZabb55.5CB9J7B9BC975.......',
+        '........58A58A665W5LHHI5aZZVabbc55VZaab5.5CB977B95C95.......',
+        '........5A55AA685Zb5LHHI5ZVabbc5.5aVZbc55.5CB97BC55C5.......',
+        '.........5..5A8A5ZU55LHHI5aacc5...5aZc5ii555CC9B5..5........',
+        '............5AA5555jk5LHI55555.....5555liii555CC5...........',
+        '.............55...5jkk5LH5.............5mnnn5.55............',
+        '..................5jkk55H5..............55nnn5..............',
+        '.................5mnk5..5.................555...............',
+        '.................5jkk5......................................',
+        '................5mnnn5......................................',
+        '...............5nnnn5.......................................',
+        '................5555........................................',
+        '............................................................',
+        '............................................................',
+      ],
+    },
+    722: { // 天環ホルシア
+      palette: [null, '#60432e', '#fff4c0', '#ffd675', '#191622', '#fffbfa', '#d99638', '#e6e1e7', '#c4bcca', '#ada3b5', '#fff8df', '#c4c8d6', '#f8dc7d', '#fff5b0', '#c6a365', '#efedf2', '#ffe4cd', '#f4f3f6', '#d9d6e2', '#ebc675', '#a49eb2', '#976e4d', '#5186b0', '#fff7e9', '#bcb8ca', '#efaba5', '#d29a9c', '#f0ce84', '#fff2c1', '#ce9e62', '#9edbd5', '#dbd8de', '#d2efde', '#66bdbd', '#efd090', '#f9f3f0', '#4eabb0', '#b2ac9d', '#397f86', '#f7dfa5', '#98919e', '#65c0c2', '#368496', '#9e794d', '#89664e', '#795c50', '#dcd8db', '#cfc9c9', '#a09bad', '#f8ead5', '#dec28e', '#a88560', '#e4dfe8', '#252432', '#c2baca', '#f5f1f5', '#aba4b8'],
+      rows: [
+        '............................................................',
+        '............................................................',
+        '............................................................',
+        '............................1...............................',
+        '...........................121..............................',
+        '..........................132311111.1.......................',
+        '....4....................1321122222121......................',
+        '...454..................1361..111113231.....................',
+        '...4554..................16611.....11361....................',
+        '...47554..................116611111..1361...................',
+        '...485554......4............116222611661....................',
+        '...4975554....4A4.............111116611.....................',
+        '....4855554...4AB4.................11.......................',
+        '....47555554..4AB4..............44..........................',
+        '....49755755444BAB4..........444CC444.......................',
+        '.....48558755544AB4.........4CCDDDCCE4......................',
+        '.....49758855554BAB4.......4CDDDDDDCCE4.....................',
+        '......485F8q55554AB4......4CDDDCCDDDDCE4...............44...',
+        '......455578qqq54BAB4.44.4ECDDCDDCCDDGE4.........rrr444HI4..',
+        '.....4857585qqqqq4AB44JJ44ECDCCCDCGGEGE4......rrr4q4HHHIK4..',
+        '.....49785F57sqqq444JJLL44ECECCCGGGEGGE4..rrrr4qqqqHHHHK4...',
+        '......4985758qsq44JJLLL4r4ECDCCG44GG444rrr4qqqqqqsHIHHIK4...',
+        '.......45585F7t4JJLLL44qr4ECDCCGGMNGGM44qq44qqsssqIOHHO4....',
+        '......485575584JLLL444qqq4ECDCEGPGGGGQ4q44RR44sttqOFHII4....',
+        '......497785584JL44JLJ4sq4ECCEEGGGGGQ444RRSJRR44KOFHHO4.....',
+        '.......4985778544ut4JL4ss4ECCE44EQQQ44RRSSSJJJRT4FHHHIK4....',
+        '.......4457898758884J444444ECCE444444RSSJJUSJJTLL4HIIK4.....',
+        '......448799488578944GG4JJ44ECE4VV4J4JSJJUWXJJLLL4IOO4......',
+        '......44994448779944GNG4SJ444EE4YY444JSJSWUXJTLRL4OII4......',
+        '......47444487994454QQG444ZZ4444Y4LJ4JSJWUXaXLTJL4IK44......',
+        '......494.44994455744Q4J44Vb4JL4V4LJ4TSTUUXacRLJL4K4HH4.....',
+        '.......4..4744445794d4JL4Vbe444V4f444LJLJXacJJLJL44KIH4.....',
+        '..........494554794dZ4JLJ4b4VVZ4fSg44LJLJacfJJLTL444KI4.....',
+        '..........445574944YZZ4JL4e4Yhgd4g4444TLTJcJJTLL4H4.4K4.....',
+        '..........455785454YZZ4JL44ZZfgYZ4bb44LTLJJTTLTL4I4..4......',
+        '.........455585574dZVb4JLJ4ZVYYZZVbb4V4LTJJLLTL44K44........',
+        '.........455785794YZVbb4JL4ZYZYZVZVbb444LTJRTL48I4H4........',
+        '........455785784dZVbbh4JL4VYVbbYZVbbb4b4LTTL4IHKIHH4.......',
+        '........457987854YZVbbi444dYVbbbYVVbbb4bb4Lj4HOI8KIH4.......',
+        '........479478554YZVbi44ZVYVbbeVZYVVbb4ibZ444HHKI4KI4.......',
+        '........494498574YVbi44ZVYZVbe44VZYYVVb4ibZd4IHKK44K4.......',
+        '.........4..48794Ybi4.4VYYVbe4..4VZYYbe44ibY4KIK4..4........',
+        '............49944Yi4..44VYVe4....4VVYe44.4iY44KK4...........',
+        '.............44..44...4k4444......4444l4..44..44............',
+        '......................4kmm4.......4nll4.....................',
+        '......................4op4........4op4......................',
+        '......................4km4........4nl4......................',
+        '.....................4opp4........4opp44....................',
+        '....................4pppp4........4ppppp4...................',
+        '.....................4444..........44444....................',
+        '............................................................',
+        '............................................................',
+      ],
+    },
+});
 
 (() => {
   'use strict';

@@ -2244,7 +2244,8 @@ summary { cursor: pointer; }
     { title: '星脈の試練', fee: 2500, level: 18, waves: [[171, 185], [189, 192], [203]] },
     { title: '深明の試練', fee: 5000, level: 23, waves: [[222, 237], [248], [266, 271]] },
     { title: '天蓋の試練', fee: 10000, level: 29, waves: [[284], [308], [321, 337]] },
-    { title: '星継ぎの試練', fee: 20000, level: 36, waves: [[352, 374], [415, 441], [548]] },
+    { title: '星継ぎの試練', fee: 20000, level: 36, waves: [[473], [415, 441], [548]],
+      firstAttemptStats: [{ hp: 1.10 }, { hp: 1.20, atk: 1.10, wis: 1.10 }, { hp: 1.20, atk: 1.10, wis: 1.10 }] },
   ];
 
   Object.assign(globalThis.Seimyaku ??= {}, {
@@ -4579,15 +4580,21 @@ summary { cursor: pointer; }
       const dungeon = this.run.kind === 'dungeon' ? this.run.dungeon : null;
       const hpScale = DUNGEON_ENEMY_HP_SCALE[clamp(dungeon?.unlock ?? 0, 0, DUNGEON_ENEMY_HP_SCALE.length - 1)];
       for (const [index, enemy] of battle.enemies.entries()) {
+        const { hp, actions, statMultipliers } = enemies[index];
         const size = SPECIES[enemy.species].size;
         const lordScale = kind === 'lord' ? (size === 2 ? 3 : size === 3 ? 5 : 1) : 1;
         if (kind === 'boss') {
-          enemy.stats.hp = enemies[index].hp ?? Math.max(enemy.stats.hp, dungeon?.guardianHp ?? 0);
+          enemy.stats.hp = hp ?? Math.max(enemy.stats.hp, dungeon?.guardianHp ?? 0);
         } else {
           enemy.stats.hp = Math.floor(enemy.stats.hp * hpScale * lordScale);
         }
+        if (statMultipliers) {
+          for (const [stat, factor] of Object.entries(statMultipliers)) {
+            enemy.stats[stat] = Math.floor(enemy.stats[stat] * factor);
+          }
+        }
         enemy.hp = enemy.stats.hp;
-        if (enemies[index].actions) enemy.actionRange = enemies[index].actions;
+        if (actions) enemy.actionRange = actions;
       }
       if (isAmaterasuDuel(this.run, battle)) battle.enemies[0].statusRateScale = .25;
       battle.newDiscoveries = new Set(battle.enemies.map(enemy => enemy.species)
@@ -4618,7 +4625,8 @@ summary { cursor: pointer; }
       const name = '格闘場 ' + RANKS[rank] + ' · ' + wave + '/3';
       const scale = (rank === 0 ? .75 : .86 + rank * .020) + wave * .012 + (attempt > 1 ? .065 : 0);
       if (attempt === 1) {
-        this.openBattle(def.waves[wave - 1].map(species => ({ species, lv, scale })), name, 'arena');
+        const statMultipliers = def.firstAttemptStats?.[wave - 1];
+        this.openBattle(def.waves[wave - 1].map(species => ({ species, lv, scale, statMultipliers })), name, 'arena');
       } else {
         const center = Math.max(0, rank - 1);
         const weights = RANKS.map((_, i) => i === center ? 9 : i === center - 1 ? 3 : i === center + 1 ? 2 : 0);

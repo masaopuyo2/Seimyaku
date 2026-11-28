@@ -701,6 +701,8 @@ summary { cursor: pointer; }
 .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 7px; padding: 8px 0; }
 .setting-row .sound-controls { display: flex; gap: 6px; }
 .setting-row + .setting-row { border-top: 1px solid var(--line-soft); }
+.setting-row.save-backup { display: grid; justify-content: stretch; }
+.save-backup .save-controls { display: flex; flex-wrap: wrap; gap: 6px; }
 .settings details { margin-top: 9px; color: var(--subtle); font-size: .83rem; }
 .settings details p { margin: 4px 0; }
 .toast { position: fixed; z-index: 12; opacity: 0; bottom: max(14px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 28px); padding: 7px 12px; background: #273e36; border: 1px solid #678d77; border-radius: 7px; color: #e7f1df; font-size: .8rem; text-align: center; pointer-events: none; transition: opacity .14s; }
@@ -987,6 +989,7 @@ summary { cursor: pointer; }
 <body>
   <div id="app"></div>
   <div id="overlay"></div>
+  <input type="file" id="save-import-file" accept=".json,application/json" hidden>
   <div id="announce" class="toast" role="status" aria-live="polite"></div>
   <noscript>星脈の継ぎ手を遊ぶにはJavaScriptを有効にしてください。</noscript>
   <script>
@@ -2676,19 +2679,23 @@ summary { cursor: pointer; }
   }
 
   const SAVE_KEYS = ['seimyaku-v1-critical', 'seimyaku-v1', 'seimyaku-v1-copy'];
+  const SAVE_BACKUP_FORMAT = 'seimyaku-save';
+  const SAVE_BACKUP_VERSION = 1;
   function hash(text) {
     let value = 2166136261;
     for (let i = 0; i < text.length; i++) value = Math.imul(value ^ text.charCodeAt(i), 16777619);
     return (value >>> 0).toString(36);
   }
 
-  function decode(serialized) {
+  function decode(serialized, backup = false) {
     if (!serialized) return null;
     try {
       const record = JSON.parse(serialized);
+      if (backup && (record.format !== SAVE_BACKUP_FORMAT || record.version !== SAVE_BACKUP_VERSION)) return null;
       if (!Number.isSafeInteger(record.seq) || record.seq < 1 || typeof record.payload !== 'string' ||
         record.hash !== hash(record.seq + '|' + record.payload)) return null;
       const payload = JSON.parse(record.payload);
+      if (backup && payload?.expedition != null) return null;
       const data = cleanState(payload);
       return data ? { ...record, data, expedition: payload.expedition ?? null } : null;
     } catch {
@@ -2703,13 +2710,19 @@ summary { cursor: pointer; }
     }
   }
 
+  function parseSaveBackup(serialized) {
+    const data = decode(serialized, true)?.data;
+    if (!data) throw new SaveError('セーブデータを読み込めません。星脈の継ぎ手から出力したJSONファイルを選んでください。', 'backup');
+    return data;
+  }
+
   class Vault {
     constructor(storage) { this.storage = storage; }
 
     read() {
       try {
         const copies = SAVE_KEYS.map(key => this.storage.getItem(key));
-        const records = copies.map(decode);
+        const records = copies.map(copy => decode(copy));
         const record = records.filter(Boolean).sort((a, b) => b.seq - a.seq)[0] ?? null;
         return {
           record, corrupt: copies.some(Boolean) && !record,
@@ -2718,6 +2731,14 @@ summary { cursor: pointer; }
       } catch {
         throw new SaveError('ブラウザの保存領域を使えません。HTMLを保存し、ブラウザで直接開いてください。', 'save');
       }
+    }
+
+    exportBackup() {
+      const { record } = this.read();
+      if (!record) throw new SaveError('出力できるセーブデータがありません。', 'backup');
+      if (record.expedition) throw new SaveError('拠点へ戻るとセーブデータを出力できます。', 'backup');
+      const { seq, payload, hash } = record;
+      return JSON.stringify({ format: SAVE_BACKUP_FORMAT, version: SAVE_BACKUP_VERSION, seq, payload, hash }, null, 2) + '\n';
     }
 
     write(data, expected, critical = false, replace = false, expedition = null) {
@@ -2968,7 +2989,7 @@ summary { cursor: pointer; }
     clamp, int, pick, weighted, clone, levelCap, monsterLevelCap, xpRequired, slotsUsed, alive, add,
     statsOf, perksOf, traitsOf, battleStats, totalPower, newMonster, enemyMonster, gainXP, offspringOf, breedingPlan, breedingRecommendations,
     monsterName, normalizeNickname,
-    scoutChance, expansionCost, newState, grantStarter, cleanState, SAVE_KEYS, SaveError, Vault,
+    scoutChance, expansionCost, newState, grantStarter, cleanState, parseSaveBackup, SAVE_KEYS, SaveError, Vault,
     EVENTS, DIRECTIONS, stepIndex, routeToStairs, supplyDropTable, GROUND_DROP_RATE, generateGroundDrops, generateFloor, encounterChance,
   });
 })();
@@ -3636,6 +3657,17 @@ summary { cursor: pointer; }
       this.base = clone(state);
       this.run = this.battle = null;
       this.corrupt = this.recovered = false;
+      return true;
+    }
+
+    importSave(data) {
+      if (this.run) return false;
+      const base = clone(data);
+      this.record = this.vault.write(data, this.record, true);
+      this.state = data;
+      this.base = base;
+      this.corrupt = this.recovered = false;
+      this.notice = 'セーブデータを取り込みました。';
       return true;
     }
 
@@ -19495,6 +19527,7 @@ Object.assign(Seimyaku.lateRankSprites, {
       </div>
       <div class="start-footer"><span>${view.difficulty ? DIFFICULTIES[view.difficulty].desc : '難易度を選ぶと出発できます。'}</span>
         ${btn('begin', '冒険を始める <span aria-hidden="true">→</span>', '', 'primary start-button', !view.difficulty)}</div>
+      <div class="dialog-actions">${btn('choose-save-import', 'セーブデータを取り込む', '', 'soft')}</div>
     </main>`;
   }
 
@@ -20817,6 +20850,8 @@ Object.assign(Seimyaku.lateRankSprites, {
         <input type="range" min="0" max="100" step="5" value="${state.musicVolume}" data-change="musicVolume" aria-label="BGMの音量"></label>
       <div class="setting-row"><div><b>効果音</b><small>操作・発見・宝箱・戦闘の音</small></div><div class="sound-controls">${btn('test-sound', '試聴', '', 'soft', !state.sound)}${btn('sound', state.sound ? 'オン' : 'オフ', `aria-pressed="${state.sound}"`, 'soft')}</div></div>
       <div class="setting-row"><div><b>セーブ</b><small>拠点・ダンジョンの階移動時に自動保存</small></div>${btn('ask-reset', '最初から', '', 'danger-btn')}</div>
+      <div class="setting-row save-backup"><div><b>バックアップと移行</b><small>出力したJSONファイルを別のブラウザでも取り込めます。</small></div>
+        <div class="save-controls">${btn('save-export', 'セーブデータを出力', '', 'soft')}${btn('choose-save-import', 'セーブデータを取り込む', '', 'soft')}</div></div>
       ${state.losses.length ? `<details><summary>星脈に還った仲間</summary>${[...state.losses].reverse().map(row => `<p>${esc(monsterName(row))} · ${esc(row.place)}</p>`).join('')}</details>` : ''}
     </div>`;
   }
@@ -21002,6 +21037,20 @@ Object.assign(Seimyaku.lateRankSprites, {
         title = '親' + (modal.id ? 'B' : 'A') + 'を選ぶ'; body = parentsModal(game, view, modal.id); break;
       case 'settings':
         title = '設定'; body = settingsModal(game.state, view); break;
+      case 'save-import': {
+        const { backup, overwrite } = modal;
+        title = overwrite ? 'セーブの上書き確認（1/2）' : 'セーブデータの取り込み';
+        body = (overwrite ? '<p class="callout danger">このブラウザにあるセーブデータを上書きします。今の冒険を残すには、先に設定から出力してください。</p>' :
+          '<p>選んだセーブデータから冒険を再開します。</p>') +
+          `<p>取り込むデータ　${DIFFICULTIES[backup.mode].name} · 仲間 ${fmt(backup.roster.length)}体 · 格闘場 ${fmt(backup.arenaWins)} / ${ARENA.length} 優勝</p>` +
+          (overwrite ? actions('review-save-overwrite', '次の確認へ') : actions('confirm-save-import', '取り込む'));
+        break;
+      }
+      case 'save-overwrite':
+        title = 'セーブの上書き確認（2/2）';
+        body = '<p class="callout danger">取り込むと、今のセーブはこのブラウザから消えます。本当に上書きしますか？</p>' +
+          actions('confirm-save-import', '上書きして取り込む', '', 'danger-btn');
+        break;
       case 'reset':
         title = '新しい冒険を始める'; body = '<p>冒険を始めると現在のセーブを上書きします。</p>' + actions('reset', '選択画面へ', '', 'danger-btn'); break;
     }
@@ -21019,11 +21068,12 @@ Object.assign(Seimyaku.lateRankSprites, {
 (() => {
   'use strict';
 
-  const { Vault, Game, MusicPlayer, SoundEffects, battleSoundSequence, musicScene, ACTIONS, ITEMS, SPECIES, SAVE_KEYS, PAGES, techniques, alive, canTargetAlly, fraction,
+  const { Vault, Game, MusicPlayer, SoundEffects, battleSoundSequence, musicScene, ACTIONS, ITEMS, SPECIES, SAVE_KEYS, parseSaveBackup, PAGES, techniques, alive, canTargetAlly, fraction,
     RANKS, TRAINING_ROOMS, STAR_CAVE, ITEM_GROUPS, breedingPlan, breedingRecommendations, draw, dialog } = Seimyaku;
   const root = document.getElementById('app');
   const overlay = document.getElementById('overlay');
   const announce = document.getElementById('announce');
+  const backupPicker = document.getElementById('save-import-file');
   const keys = { ArrowUp: 'up', ArrowLeft: 'left', ArrowDown: 'down', ArrowRight: 'right',
     w: 'up', a: 'left', s: 'down', d: 'right' };
   const parentFilterDefaults = { parentFamily: '', parentLevel: '', parentRank: '' };
@@ -21039,6 +21089,7 @@ Object.assign(Seimyaku.lateRankSprites, {
     auto: false, speed: 1, activeUnit: null, enemyTarget: null, orders: {}, techPage: 0, historyPage: 0, merchantPage: 0, musicPreview: null, meatOpenPoint: null,
   });
   let view = makeView();
+  let backupRead = 0;
   let game, startupError, autoTimer, toastTimer, audio, effects, modalReturn, soundReadyAt = 0;
   const music = new MusicPlayer(() => {
     audio ??= new (window.AudioContext || window.webkitAudioContext)();
@@ -21083,6 +21134,36 @@ Object.assign(Seimyaku.lateRankSprites, {
       announce.classList.remove('visible');
       announce.textContent = '';
     }, 2600);
+  }
+
+  function downloadSaveBackup() {
+    const file = new Blob([game.vault.exportBackup()], { type: 'application/json' });
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    const timestamp = new Date().toISOString().slice(0, 19).replace('T', '_').replaceAll(':', '-');
+    link.href = url;
+    link.download = `seimyaku-save-${timestamp}Z.json`;
+    link.hidden = true;
+    document.body.append(link);
+    try { link.click(); }
+    finally {
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    }
+  }
+
+  async function readSaveFile(file) {
+    const origin = view;
+    const returnTo = view.modal;
+    const request = ++backupRead;
+    let backup, message;
+    try { backup = parseSaveBackup(await file.text()); }
+    catch (error) { message = error.code === 'backup' ? error.message : 'ファイルを開けませんでした。もう一度選んでください。'; }
+    if (view.blocked || view !== origin || view.modal !== returnTo || request !== backupRead) return;
+    if (!backup) { showNotice(message); return; }
+    open('save-import');
+    Object.assign(view.modal, { backup, returnTo, overwrite: Boolean(game.state || game.corrupt) });
+    render();
   }
 
   function syncBattle(previous) {
@@ -21290,6 +21371,32 @@ Object.assign(Seimyaku.lateRankSprites, {
           }
           break;
         case 'settings': open('settings'); break;
+        case 'save-export':
+          if (game.atBase() && view.modal?.type === 'settings') {
+            try { downloadSaveBackup(); game.notice = 'セーブデータのダウンロードを開始しました。'; }
+            catch (error) { game.notice = error.code ? error.message : 'セーブデータを出力できませんでした。'; }
+          }
+          break;
+        case 'choose-save-import':
+          if (view.modal?.type === 'settings' || !game.state || view.newGame) backupPicker.click();
+          return;
+        case 'review-save-overwrite':
+          if (view.modal?.type === 'save-import' && view.modal.overwrite) {
+            view.modal = { ...view.modal, type: 'save-overwrite', returnTo: view.modal };
+          }
+          break;
+        case 'confirm-save-import': {
+          const modal = view.modal;
+          const overwrite = Boolean(game.state || game.corrupt);
+          if (modal?.type !== (overwrite ? 'save-overwrite' : 'save-import')) break;
+          try {
+            if (game.importSave(modal.backup)) { view = makeView(); resetScroll = true; }
+          } catch (error) {
+            if (error.code !== 'save') throw error;
+            game.notice = error.message;
+          }
+          break;
+        }
         case 'battle-history': if (game.battle) { view.historyPage = 0; open('battle-history'); } break;
         case 'history-page': if (view.modal?.type === 'battle-history') view.historyPage = Math.max(0, view.historyPage + Number(info.step)); break;
         case 'sound':
@@ -21759,6 +21866,12 @@ Object.assign(Seimyaku.lateRankSprites, {
 
   document.addEventListener('change', event => {
     const control = event.target;
+    if (control === backupPicker) {
+      const [file] = control.files;
+      control.value = '';
+      if (file && !view.blocked && (view.modal?.type === 'settings' || !game.state || view.newGame)) void readSaveFile(file);
+      return;
+    }
     const field = control.dataset.change;
     if (!field || view.blocked) return;
     game.notice = '';

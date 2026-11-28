@@ -1043,6 +1043,7 @@ summary { cursor: pointer; }
     ai12: { name: 'AI1〜2回行動', desc: '毎ターン1〜2回行動。追加行動はAIが決める。' },
     ai13: { name: 'AI1〜3回行動', desc: '毎ターン1〜3回行動。追加行動はAIが決める。' },
     ai2: { name: 'AI2回行動', desc: '毎ターン2回行動。追加行動はAIが決める。' },
+    ai23: { name: 'AI2〜3回行動', desc: '毎ターン2回か3回行動する（各50%）。追加行動はAIが決める。' },
     ai3: { name: 'AI3回行動', desc: '毎ターン3回行動。追加行動はAIが決める。' },
     small: { name: 'すり抜け', desc: '回避率が5ポイント上がる。', size: true },
     large: { name: '双衝', desc: '単体を攻撃すると20%の確率で威力45%の追撃が出る。', size: true },
@@ -1880,6 +1881,7 @@ summary { cursor: pointer; }
       desc: '赤銅色の帆翼で上昇気流をつかむ大翼竜。片翼を畳んで急降下すると、尾の炎が空に長い弧を描く。' },
     { id: astralWingbeast, template: 781, rank: STAR_RANK, size: 3, parents: [oracleFox, skyfireDragon],
       name: '神狐アマテラス', family: SPECIES[783].family, element: 'dawn', resistance: 'ember',
+      traits: ['ai23', 'fury'],
       desc: '黎明を司る白き狐神。朝日を背に尾をたなびかせ、夜明け前の谷を静かに見渡す。' },
   ];
   for (const entry of rewardFusions) {
@@ -2190,10 +2192,43 @@ summary { cursor: pointer; }
     return [...summitTraits[form], 'anchor', 'vigor', 'ward', 'renew'].find(trait => !traits.includes(trait));
   }
 
+  const starTraits = [
+    [782, '天頂の観測', 'HPが75%以上残っている相手への魔法ダメージが14%増える。'],
+    [800, '皆既の残焔', 'HPが60%以下の相手への火属性ダメージが18%増える。'],
+    [801, '極光の庇護', 'HPが半分以下の味方（自身を除く）を技で回復すると、2ターンの結界を張る。'],
+    [802, '星喰い', 'HPが35%以下の相手に与えるダメージが18%増える。'],
+    [823, '九尾の火扇', '火属性の全体攻撃で与えるダメージが12%増える。'],
+    [824, '根脈の養い', '回復技でHPを回復した対象のMPも2回復する。'],
+    [825, '氷羽の急降下', '戦闘の最初のターンは行動順を決める素早さが25%上がる。'],
+    [826, '星鉱の装甲', 'HPが半分以上ある間、単体物理攻撃で受けるダメージが18%減る。'],
+    [827, '星綿の包み', 'すでに結界がある対象へのHP回復量が20%増える。'],
+    [828, '逆帆の導雷', '麻痺している相手への雷属性ダメージが22%増える。'],
+    [829, '炉心の蓄熱', '物理攻撃を受けて生き残るたび、MPが2回復する。'],
+    [830, '森灯の休息', 'ターン終了時、最もHP割合が低い味方が半分以下なら、自身の最大HPの4%（上限35）をその味方に回復する。自身も対象に含む。'],
+    [831, '欠月の灯芯', '状態異常の敵がいると、ターン終了時にMPが3回復する。'],
+    [832, '凍晶の外殻', '全体攻撃で受けるダメージが18%減る。'],
+    [833, '渦海の引き潮', '吸収技でHPを吸収する割合が12ポイント増える。'],
+    [834, '宵月の呪印', '技で付与した守備低下の持続が1ターン延びる。'],
+    [839, '白潮の清め', '回復技で状態異常を解除した対象のMPが3回復する。'],
+    [840, '原炎の芯火', '火属性の攻撃を当てると、技1回につきMPが3回復する。'],
+    [FINAL_DEEP_BOSS.id, '逆流の魔眼', '状態異常の相手への影属性ダメージが14%増える。'],
+    [astralWingbeast, '黎明の武威', 'HPが半分を超えている相手への物理ダメージが20%増える。'],
+    [deepCrystalDragon, '深晶の護陣', '防御すると、自身を除く味方全体に1ターンの結界を張る。'],
+    [thunderCrownBird, '雷冠の一閃', '行動順を決める素早さが自分より低い相手への単体物理ダメージが16%増える。'],
+    [jadeRingRam, '翠環の芽守り', 'HPが半分以下の対象へのHP回復量が22%増える。'],
+    [fallenAngel, '砕輪の魔刃', '影属性の魔法は、相手の結界による軽減を半分無視する。'],
+  ];
+  for (const [owner, name, desc] of starTraits) {
+    TRAITS['star' + owner] = { name, desc, owner };
+  }
+  const canInheritTrait = id => Object.hasOwn(TRAITS, id) && !TRAITS[id].size && !TRAITS[id].owner;
+
   // Apply rank bonuses after building the whole catalogue, including rewards.
   for (let id = 1; id < SPECIES.length; id++) {
     const def = SPECIES[id];
-    const traits = def.rank >= SS_RANK ? [...def.traits, summitTrait(def.form, def.traits)] : def.traits;
+    const traits = [...def.traits];
+    if (def.rank === STAR_RANK) traits.push('star' + id);
+    else if (def.rank === SS_RANK) traits.push(summitTrait(def.form, traits));
     SPECIES[id] = Object.freeze({ ...def, traits, growth: growthRates(def), specialties: GROWTH_SPECIALTIES[def.form] });
   }
 
@@ -2216,7 +2251,7 @@ summary { cursor: pointer; }
     RANKS, RANK_COUNTS, S_RANK, MEAT_RANK_MULTIPLIERS, MEAT_SIZE_MULTIPLIERS, STATS, BASE_SCALE, SIZES, DIFFICULTIES, TACTICS, ELEMENTS, TRAITS, ACTIONS, SKILLS, HIDDEN,
     ITEMS, SEED_IDS, ARENA_PERMITS, WEAPONS, AILMENTS, GROUND_DROPS, CHEST_DROPS, VAULT_DROPS, GROUND_SUPPLY_UPGRADES, CHEST_SUPPLY_UPGRADES,
     FAMILIES, DUNGEONS, S_DUNGEON, FINALE_DUNGEON, FINALE_BATTLES, SPECIES, BY_RANK, STARTERS, CAPS, ARENA, RECIPES, SPECIAL_RESULTS,
-    RECIPE_BY_PAIR, DEX_REWARDS, advancedSkillAliases, pairKey, summitTrait, TRAINING, TRUE_TRAINING, TRAINING_ROOMS, TRAINING_OPPONENTS, FORGE_UNLOCK, LOCAL_SCOUTS,
+    RECIPE_BY_PAIR, DEX_REWARDS, advancedSkillAliases, pairKey, summitTrait, canInheritTrait, TRAINING, TRUE_TRAINING, TRAINING_ROOMS, TRAINING_OPPONENTS, FORGE_UNLOCK, LOCAL_SCOUTS,
     DEEP_DUNGEONS, FINAL_DEEP_DUNGEON, FINAL_DEEP_FLOORS, FINAL_DEEP_BOSS, STAR_CAVE, isAmaterasuDuel, crownforgeDragon, oracleFox, skyfireDragon, astralWingbeast,
   });
 })();
@@ -2225,7 +2260,7 @@ summary { cursor: pointer; }
   'use strict';
 
   const { SPECIES, RANKS, STATS, BASE_SCALE, CAPS, SKILLS, HIDDEN, ACTIONS, ITEMS, SEED_IDS, ARENA_PERMITS, WEAPONS, GROUND_DROPS, GROUND_SUPPLY_UPGRADES, DIFFICULTIES, TACTICS, TRAITS,
-    RECIPE_BY_PAIR, DEX_REWARDS, advancedSkillAliases, pairKey, summitTrait, DUNGEONS, S_DUNGEON, FINALE_DUNGEON, STAR_CAVE } = Seimyaku;
+    RECIPE_BY_PAIR, DEX_REWARDS, advancedSkillAliases, pairKey, summitTrait, canInheritTrait, DUNGEONS, S_DUNGEON, FINALE_DUNGEON, STAR_CAVE } = Seimyaku;
   const ordinaryBreedingSpecies = SPECIES.slice(1).filter(def => !def.specialOnly && def.ordinaryBreeding !== false);
   const breedingPools = RANKS.map((_, limit) => ordinaryBreedingSpecies.filter(def => def.rank <= limit));
   const lastOrdinarySpecies = breedingPools.at(-1).at(-1).id;
@@ -2301,10 +2336,11 @@ summary { cursor: pointer; }
   function traitsOf(mon) {
     const def = SPECIES[mon.species];
     const traits = [...def.traits];
-    if (mon.swap) {
-      traits[mon.swap.slot] = mon.swap.trait;
+    const swap = mon.swap;
+    if ((swap?.slot === 0 || swap?.slot === 1) && canInheritTrait(swap.trait)) {
+      traits[swap.slot] = swap.trait;
       // Honor a mirror used before SS and ★ earned the extra slot.
-      if (traits[3] === mon.swap.trait) traits[3] = summitTrait(def.form, traits);
+      if (traits[3] === swap.trait) traits[3] = summitTrait(def.form, traits);
     }
     return traits;
   }
@@ -2611,7 +2647,7 @@ summary { cursor: pointer; }
       if (Array.isArray(row.seedStats)) mon.seedStats = STATS.map((_, i) => int(row.seedStats[i], 0, 0, Number.MAX_SAFE_INTEGER));
       const swap = row.swap;
       const def = SPECIES[row.species];
-      if ((swap?.slot === 0 || swap?.slot === 1) && Object.hasOwn(TRAITS, swap.trait) && !TRAITS[swap.trait].size &&
+      if ((swap?.slot === 0 || swap?.slot === 1) && canInheritTrait(swap.trait) &&
         !def.traits.slice(0, 3).includes(swap.trait)) mon.swap = { slot: swap.slot, trait: swap.trait };
       const learned = new Map();
       for (const skill of Array.isArray(row.skills) ? row.skills : []) {
@@ -2983,6 +3019,21 @@ summary { cursor: pointer; }
     return factor;
   }
 
+  function starAttackFactor(unit, target, action) {
+    const physical = action.kind === 'physical';
+    switch (unit.traits[3]) {
+      case 'star782': return action.kind === 'magic' && fraction(target) >= .75 ? 1.14 : 1;
+      case 'star800': return action.el === 'ember' && fraction(target) <= .60 ? 1.18 : 1;
+      case 'star802': return fraction(target) <= .35 ? 1.18 : 1;
+      case 'star823': return action.el === 'ember' && action.all ? 1.12 : 1;
+      case 'star828': return action.el === 'volt' && target.effects.paralysis ? 1.22 : 1;
+      case 'star844': return action.el === 'shade' && HARMFUL_EFFECTS.some(key => target.effects[key]) ? 1.14 : 1;
+      case 'star851': return physical && fraction(target) > .50 ? 1.20 : 1;
+      case 'star855': return physical && !action.all && effectiveSpeed(unit) > effectiveSpeed(target) ? 1.16 : 1;
+      default: return 1;
+    }
+  }
+
   function damageEstimate(unit, target, action) {
     const physical = action.kind === 'physical';
     const attack = physical ? unit.stats.atk : unit.stats.wis;
@@ -2994,15 +3045,23 @@ summary { cursor: pointer; }
     if (!physical && has(unit, 'conduct')) incoming *= 1.16;
     if (physical && has(target, 'shell')) incoming *= .85;
     if (!physical && has(target, 'ward')) incoming *= .8;
+    incoming *= starAttackFactor(unit, target, action);
+    if (has(target, 'star826') && physical && !action.all && fraction(target) >= .5) incoming *= .82;
+    if (has(target, 'star832') && action.all) incoming *= .82;
     if (has(unit, 'fury') && fraction(unit) <= 1 / 3) incoming *= 1.25;
     if (unit.effects.might) incoming *= 1.3;
-    if (target.effects.shield && !action.purge) incoming *= .68;
+    if (target.effects.shield && !action.purge) {
+      incoming *= has(unit, 'star857') && !physical && action.el === 'shade' ? .84 : .68;
+    }
     if (target.effects.guard && !action.purge) incoming *= .5;
     return incoming * .70;
   }
 
-  function healingEstimate(unit, action) {
-    return Math.floor((unit.stats.wis * action.power + 8) * (has(unit, 'calm') ? 1.25 : 1));
+  function healingEstimate(unit, action, target) {
+    let amount = (unit.stats.wis * action.power + 8) * (has(unit, 'calm') ? 1.25 : 1);
+    if (has(unit, 'star827') && target.effects.shield) amount *= 1.2;
+    if (has(unit, 'star856') && fraction(target) <= .5) amount *= 1.22;
+    return Math.floor(amount);
   }
 
   function chooseAction(unit, friends, foes, turn, usedAttacks) {
@@ -3034,7 +3093,8 @@ summary { cursor: pointer; }
       if (heal) return { action: heal[0], target: weak.key };
       function scoreHeal(action) {
         const affected = action.all ? needs : [weak];
-        const value = affected.reduce((sum, ally) => sum + Math.min(ally.stats.hp - ally.hp, healingEstimate(unit, action)), 0);
+        const value = affected.reduce((sum, ally) =>
+          sum + Math.min(ally.stats.hp - ally.hp, healingEstimate(unit, action, ally)), 0);
         return value - action.mp * (tactic === 'conserve' ? 2.2 : 1.1);
       }
     }
@@ -3066,7 +3126,7 @@ summary { cursor: pointer; }
           const finisher = potential >= enemy.hp ? 7 + enemy.stats.hp * .16 : 0;
           return sum + Math.min(potential, enemy.hp) + finisher;
         }, 0);
-        if (action.drain) score += Math.min(unit.stats.hp - unit.hp, score * action.drain) * .5;
+        if (action.drain) score += Math.min(unit.stats.hp - unit.hp, score * drainRate(unit, action)) * .5;
         if (action.purge) score += affected.filter(enemy => HELPFUL_EFFECTS.some(key => enemy.effects[key])).length * 6;
         if (action.effect && !target.effects[action.effect] && target.hp > target.stats.hp * .29) {
           const value = { poison: target.stats.hp * .19, stun: target.stats.atk * .36,
@@ -3079,6 +3139,10 @@ summary { cursor: pointer; }
       }
     }
     return best;
+  }
+
+  function drainRate(unit, action) {
+    return Math.min(1, action.drain + (has(unit, 'star833') ? .12 : 0));
   }
 
   const EFFECT_TURNS = { weak: 3, poison: 3, stun: 1, paralysis: 3, freeze: 1 };
@@ -3113,6 +3177,7 @@ summary { cursor: pointer; }
     }
     // Multiple action traits cannot add together; the strongest one applies.
     if (has(unit, 'ai3')) return 3;
+    if (has(unit, 'ai23')) return 2 + Math.floor(random() * 2);
     if (has(unit, 'ai2')) return 2;
     if (has(unit, 'ai13')) return 1 + Math.floor(random() * 3);
     if (has(unit, 'ai12')) return 1 + Math.floor(random() * 2);
@@ -3124,7 +3189,8 @@ summary { cursor: pointer; }
     const teams = [battle.allies, battle.enemies];
     const participants = teams.flatMap((team, side) => alive(team).flatMap(unit => {
       const count = actionCount(unit, random);
-      const speed = effectiveSpeed(unit) * (.92 + random() * .16);
+      const openingSpeed = battle.turn === 1 && has(unit, 'star825') ? 1.25 : 1;
+      const speed = effectiveSpeed(unit) * openingSpeed * (.92 + random() * .16);
       return Array.from({ length: count }, (_, actionIndex) => {
         const request = side || actionIndex ? null : orders[unit.key];
         const initiative = speed * (1 - actionIndex * .08) +
@@ -3178,23 +3244,38 @@ summary { cursor: pointer; }
 
       if (action.kind === 'guard') {
         unit.effects.guard = 1;
+        if (has(unit, 'star854')) {
+          // Effects tick at round end, including the round they are applied.
+          for (const friend of alive(friends)) {
+            if (friend !== unit) friend.effects.shield = Math.max(2, friend.effects.shield ?? 0);
+          }
+        }
         logEvent(battle, unit.name + 'は身を守った。');
         continue;
       }
+      const healing = action.kind === 'heal';
       if (canTargetAlly(action)) {
         for (const friend of affected) {
           if (action.cleanse && clearEffects(friend, HARMFUL_EFFECTS)) {
             logEvent(battle, friend.name + 'の状態異常が解除された。', 'good');
+            if (healing && has(unit, 'star839')) friend.mp = Math.min(friend.stats.mp, friend.mp + 3);
+          }
+          if (healing) {
+            // Only an existing shield increases the healing from this move.
+            const amount = Math.min(friend.stats.hp - friend.hp, healingEstimate(unit, action, friend));
+            if (amount > 0) {
+              if (has(unit, 'star801') && friend !== unit && fraction(friend) <= .5) {
+                friend.effects.shield = Math.max(3, friend.effects.shield ?? 0);
+              }
+              friend.hp += amount;
+              if (has(unit, 'star824')) friend.mp = Math.min(friend.stats.mp, friend.mp + 2);
+            }
           }
           if (action.barrier) friend.effects.shield = Math.max(3, friend.effects.shield ?? 0);
           if (action.rally) friend.effects.might = Math.max(4, friend.effects.might ?? 0);
         }
       }
-      if (action.kind === 'heal') {
-        for (const friend of affected) {
-          const amount = Math.min(friend.stats.hp - friend.hp, healingEstimate(unit, action));
-          friend.hp += amount;
-        }
+      if (healing) {
         if (has(unit, 'warm')) unit.mp = Math.min(unit.stats.mp, unit.mp + 1);
         logEvent(battle, unit.name + 'の' + actionName + '。' + (action.all ? '味方全体' : target.name) + 'が回復。', side ? '' : 'good');
         continue;
@@ -3205,6 +3286,7 @@ summary { cursor: pointer; }
         continue;
       }
 
+      let landed = false;
       usedAttacks.get(unit).add(order.action);
       logEvent(battle, unit.name + 'の' + actionName + '。', side ? '' : 'action');
       for (const enemy of affected) {
@@ -3222,11 +3304,15 @@ summary { cursor: pointer; }
           (.9 + random() * .2) * (critical ? 1.52 : 1)));
         const applied = Math.min(enemy.hp, damage);
         damageUnit(enemy, damage);
+        landed = true;
+        if (enemy.hp && action.kind === 'physical' && has(enemy, 'star829')) {
+          enemy.mp = Math.min(enemy.stats.mp, enemy.mp + 2);
+        }
         const affinity = elementFactor(action, enemy);
         logEvent(battle, enemy.name + 'に ' + damage.toLocaleString('ja') + ' ダメージ' +
           (critical ? '・会心！' : affinity >= 1.3 ? '・弱点！' : affinity <= .79 ? '・耐性' : '。'), side ? 'damage' : 'hit');
         if (action.drain) {
-          const healed = Math.min(unit.stats.hp - unit.hp, Math.floor(applied * action.drain));
+          const healed = Math.min(unit.stats.hp - unit.hp, Math.floor(applied * drainRate(unit, action)));
           unit.hp += healed;
           if (healed > 0) logEvent(battle, unit.name + 'がHPを ' + healed + ' 吸収した。', 'good');
         }
@@ -3235,7 +3321,8 @@ summary { cursor: pointer; }
           if (enemy.perks.has('statusRes')) resistance *= .66;
           if (has(enemy, 'anchor')) resistance *= .5;
           if (random() < action.rate * resistance) {
-            enemy.effects[action.effect] = EFFECT_TURNS[action.effect];
+            const duration = EFFECT_TURNS[action.effect] + (action.effect === 'weak' && has(unit, 'star834') ? 1 : 0);
+            enemy.effects[action.effect] = Math.max(enemy.effects[action.effect] ?? 0, duration);
             logEvent(battle, enemy.name + 'に' + AILMENTS[action.effect] + '。', 'note');
           }
         }
@@ -3256,12 +3343,15 @@ summary { cursor: pointer; }
           if (opponents.length > 1) logEvent(battle, '巨威の衝撃が敵に波及した。', 'hit');
         }
       }
+      if (landed && unit.hp && action.el === 'ember' && has(unit, 'star840')) {
+        unit.mp = Math.min(unit.stats.mp, unit.mp + 3);
+      }
     }
     if (ongoing()) {
       for (const unit of new Set(participants.map(row => row.unit))) {
         if (!unit.hp) continue;
         if (unit.effects.poison) {
-          const poison = Math.max(1, Math.ceil(unit.stats.hp * .075));
+          const poison = Math.max(1, Math.ceil(unit.stats.hp * .05));
           damageUnit(unit, poison);
           logEvent(battle, unit.name + 'に毒で ' + poison + ' ダメージ。', 'note');
         }
@@ -3278,6 +3368,22 @@ summary { cursor: pointer; }
             continue;
           }
           if (--unit.effects[key] <= 0) delete unit.effects[key];
+        }
+      }
+    }
+    if (ongoing()) {
+      for (const [side, team] of teams.entries()) {
+        const friends = alive(team);
+        const afflictedFoe = teams[1 - side].some(foe =>
+          foe.hp > 0 && HARMFUL_EFFECTS.some(effect => foe.effects[effect]));
+        for (const owner of friends) {
+          if (afflictedFoe && has(owner, 'star831')) owner.mp = Math.min(owner.stats.mp, owner.mp + 3);
+          if (!has(owner, 'star830')) continue;
+          const target = friends.reduce((lowest, ally) => fraction(ally) < fraction(lowest) ? ally : lowest);
+          if (fraction(target) > .5) continue;
+          const amount = Math.min(target.stats.hp - target.hp, 35, Math.ceil(owner.stats.hp * .04));
+          target.hp += amount;
+          logEvent(battle, owner.name + 'の森灯の休息で' + target.name + 'のHPが ' + amount + ' 回復。', side ? '' : 'good');
         }
       }
     }
@@ -3303,7 +3409,7 @@ summary { cursor: pointer; }
   const { SPECIES, BY_RANK, DUNGEONS, S_DUNGEON, FINALE_DUNGEON, FINALE_BATTLES, ARENA, RANKS, STATS, S_RANK, MEAT_RANK_MULTIPLIERS, MEAT_SIZE_MULTIPLIERS, ITEMS, SEED_IDS, ARENA_PERMITS, WEAPONS, CHEST_DROPS, VAULT_DROPS, CHEST_SUPPLY_UPGRADES,
     TRAINING, TRUE_TRAINING, FORGE_UNLOCK,
     DEEP_DUNGEONS, FINAL_DEEP_DUNGEON, FINAL_DEEP_FLOORS, FINAL_DEEP_BOSS, STAR_CAVE, isAmaterasuDuel,
-    TACTICS, SKILLS, DIFFICULTIES, TRAITS,
+    TACTICS, SKILLS, DIFFICULTIES, canInheritTrait,
     STARTERS, EVENTS, DEX_REWARDS, newState, grantStarter, newMonster, monsterName, normalizeNickname, levelCap, monsterLevelCap, gainXP, battleStats, perksOf, breedingPlan, traitsOf,
     expansionCost, scoutChance, clamp, int, clone, weighted, pick, alive, add, slotsUsed, LOCAL_SCOUTS,
     generateFloor, stepIndex, routeToStairs, supplyDropTable, encounterChance, unitFrom, makeBattle, resolveRound, blastEnemies, logEvent } = Seimyaku;
@@ -3472,7 +3578,14 @@ summary { cursor: pointer; }
       !Array.isArray(team) || !Array.isArray(travel)) return {};
     const entrance = dungeon.collectionGates?.[gate];
     if (dungeon.collectionGates && floor.number > 1 && !entrance) return {};
-    const restoreUnit = unit => ({ ...unit, perks: new Set(unit.perks) });
+    const restoreUnit = unit => {
+      const restored = { ...unit, perks: new Set(unit.perks) };
+      if (RANKS[SPECIES[unit.species]?.rank] === '★') {
+        const mon = unit.uid ? state.roster.find(mon => mon.uid === unit.uid && mon.species === unit.species) : null;
+        restored.traits = mon ? traitsOf(mon) : [...SPECIES[unit.species].traits];
+      }
+      return restored;
+    };
     const members = team.filter(unit => state.party.includes(unit.uid) &&
       state.roster.some(mon => mon.uid === unit.uid && mon.species === unit.species)).map(restoreUnit);
     if (!alive(members).length) return {};
@@ -3847,7 +3960,7 @@ summary { cursor: pointer; }
       child.sp += plan.pool + plan.nativeBonus - child.skills.reduce((total, skill) => total + skill.points, 0);
       const species = SPECIES[child.species];
       if (swap && this.state.bag.mirror > 0 && [0, 1].includes(swap.slot) &&
-        TRAITS[swap.trait] && !TRAITS[swap.trait].size && !species.traits.includes(swap.trait) &&
+        canInheritTrait(swap.trait) && !species.traits.includes(swap.trait) &&
         [...traitsOf(first), ...traitsOf(second)].includes(swap.trait)) {
         child.swap = swap;
         add(this.state.bag, 'mirror', -1);
@@ -8858,16 +8971,16 @@ Seimyaku.alternateForms = {
         '....7GCGGCBBDBA9AGBG938248MIQIYJMLQ99BBCCCCDDGFFB7...77GB7..',
         '...7GCDGCGADG9AAA99BB832E626223YIQ82BCCCFFFFDGFDA7.....7A7..',
         '..7BCCGDCBABA9ZBAAA9334E88434283a2552CFCGDCFCGCG7.......7...',
-        '.7ADCDADGDGA91231B214EEE2234423a334634EB779DFGCG7...........',
-        '.7BCDGb9cdDD1e111112EEE24484228E441411G7..77GCCB7...........',
-        '.7BDAZdbfdd1ege844EEEE44444422222413E2141..7AGCA7...........',
-        '.79AIhffiid1jgg6224E2441144222EE3215HE12E...79D97...........',
-        '..77ZklfldddEej8E22284411444232222132E122E...7G7............',
-        '..79ikiflddZl23824224114442E2882634144212E...797............',
-        '..7clkdffddikDC44411142224222EE88611H2861.....7.............',
-        '..7dkfZdZhdkdGCBGCB722442885588443E1EE13E...................',
-        '..7dkZfffldhcCDABD972411424EE44mm3614212411.................',
-        '..7fdckilfifBFB77B7.4114m4EEE44mm412EEH1jge1...11...........',
+        '.7ADCDADGDGA99BAAB214EEE2234423a334634EB779DFGCG7...........',
+        '.7BCDGb9cdDD1e111112EEE24484228E4414E217..77GCCB7...........',
+        '.7BDAZdbfdd1ege8442EE244444422222414E241...7AGCA7...........',
+        '.79AIhffiid1jgg62242E241144222EE3214E241....79D97...........',
+        '..77ZklfldddEej8222244411444232222144E241....7G7............',
+        '..79ikiflddZl23824444114442E288263414D241....797............',
+        '..7clkdffddikDC44411142224222EE8861142E41.....7.............',
+        '..7dkfZdZhdkdGCBGCB722442885588443E1422E41..................',
+        '..7dkZfffldhcCDABD972411424EE44mm3611428811.................',
+        '..7fdckilfifBFB77B7.4114m4EEE44mm4114281jge1...11...........',
         '..7ZGIlihdkZAC97.7.414amm2E2244mm41HE388eje11.1H1...........',
         '..7B7biiidlc797...14mamm422244mmaE12E4863j2111E1............',
         '...77flkbbhB77..14mmamm4488444mm422113213e141681............',
@@ -10119,59 +10232,59 @@ Seimyaku.alternateForms = {
       ],
     },
     801: { // 極光天セラフィネ
-      palette: [null, '#181523', '#212a4a', '#365f96', '#4f6cb2', '#5567af', '#612d44', '#6497c3', '#78c8c8', '#7f78c8', '#994b6b', '#9cd7d7', '#9ebcfc', '#a04b6a', '#a19cd7', '#ada9dc', '#b3ad9e', '#c6a365', '#d399c4', '#d63b87', '#d99638', '#e878ac', '#ebc675', '#ed92bd', '#eea6de', '#efd090', '#f4e7ff', '#f8c8e2', '#f8dc7d', '#f9d3ee', '#f9f0f5', '#f9f3f0', '#fbe3f0', '#fcecf6', '#fefbfe', '#ffd675', '#ffe4cd', '#fff2c1', '#fff4c0', '#fff5b0', '#fff7e9', '#e5e1f2', '#9b98cb', '#d9e8ef', '#d8e5ec', '#ede0f4', '#f2acc8', '#8192c4', '#696fb1', '#be789d', '#cfbec7', '#d0bec8', '#ead6d0', '#9c8299', '#eddfeb', '#e9c78c', '#c0b8ca', '#9c8fa8', '#e2dcf4', '#28243e', '#b8b5dd', '#f6efff'],
+      palette: [null, '#a7714f', '#f9d78b', '#191827', '#fff2df', '#2d2940', '#cb965d', '#e6b568', '#ffe8b2', '#c6bdce', '#88abc3', '#e4dce1', '#181523', '#f8dc7d', '#fff5b0', '#c6a365', '#bde2dc', '#a39cb5', '#6a91c5', '#635d78', '#ffe4cd', '#9ccbd9', '#4f6cb2', '#fff7e9', '#c6a9c6', '#eea6de', '#d399c4', '#2b3c62', '#375292', '#597bbb', '#48415c', '#f1c4a7', '#d29a92', '#72504d', '#d6b98c', '#435c9b', '#a16e74'],
       rows: [
         '............................................................',
-        '............................................................',
-        '............................................................',
-        '............................6...............................',
-        '...........................6c6....2.........................',
-        '.......................2226ZcZ66666C62......................',
-        '....1................22CC6Zc66ccccc6c6C22...................',
-        '...1Y1...........Q..2CC26ZK6..66666ZcZ6CCC2Q2...............',
-        '...1YY1..........Q2CC2...6KK66.....66ZK622CQ22..............',
-        '...1YYY1.......CCQCC......66KK66666..6ZJ6CCQCC2.............',
-        '...1EYYY1.....21CQ2.........66KcccK66KK6...Q2C22............',
-        '...1EYYYY1...21W1Q............66666KK66....Q22C2............',
-        '....1EYYYY1.221WF1.................66........22C2...........',
-        '....1ffYYYY12C1WF1..............11............2C22..........',
-        '....1EffYYYY111FWF1..........111SS111.........22C22.........',
-        '.....1EffEYYYY11WF1.........1SSdddSSH1.........22C22Q.......',
-        '.....1EffEEYYYY1FWF1.......1SddddddSSH1.........22C2Q.......',
-        '......1EffEYYYYY1WF1......1SdddSSddddSH1.........2CCQCC11...',
-        '......1YfffEwwYY1FWF1.11.1HSddSddSSddaH1.........x25111YY1..',
-        '.....1EYffEwwEEwY1WF11LM11HSdSSSdSaaHaH1......xxx1w1YYYYB1..',
-        '.....1EYEfffyEEww111LLAA11HSHSSSaaaHaaH1..Qxxx1wwwwYYYYB1...',
-        '......1EEYffEywE11LLAAA1.1HSdSSa11aa111xxCQCwwwwwyYYYYYB1...',
-        '.......1YYgffzE1QLAAA11xx1HSdSSaa4eaa411wwQ1wwyyywYBhhB1....',
-        '......1EYYYYfE1CQCA111www1HSdSHaOaaaaI1w11LL11yzzwBhhhh1....',
-        '......1EYYgYYg1LQ11LAL1ww1HSSHHaaaaaI111LLRLLk21BBhhhB12....',
-        '.......1EgYYYgf11EE1LA1yy1HSSH11HIII11MLRRRLk2Q21hhhhhB1....',
-        '.....2.11YYgggYYEEE1L111111HSSH111111MbRLLkk2CQl21hhYQ12....',
-        '.....211EYgg1gEYYEEQ1TT1MM11HSH1VV1M1MbLLkk2C5Qll2hBCQC2....',
-        '.....211EE111EYYEECQCXT1bM111HH1PP111MbLRkkC55Qll2BYYQ52....',
-        '.....21Y1111EYEE11jQIIT111VV1111P1AM1MbL7R2C55Qlll2B1152....',
-        '.....21E1C11EE11Yjj11I1M1VGG1MA1V1AM1MbL72C555Qlll52YY12....',
-        '.....251551Y1111jjE1N1LA1Go1o11V17111AMA2QQQQQQQQQQQ2Y1.....',
-        '.....255551E1Yj1jE1NU1LAM11oooo17b311AMAn255CCQ55552BY1.....',
-        '......255511Yjj1E11NUU1MA11DPD3P1311D1MAnn2m55Q555251B1.....',
-        '......25551YYjEj1j1NUU1MA11VV73PV1GG11ALAnn2m5Q55215512.....',
-        '......2551YYjEjjj1NUU91MAM1VVPPVpVGGG11Annn2mmQ55211552.....',
-        '......2551YYjEjjE1NUU991MA1VPVPqVpppp1G1Annn2mQ521i1552.....',
-        '......251YYjEjYE1NUU99D1MA1VPqrsPVpppp181ALnA2m2BYYY152.....',
-        '......251YYEEYEY1NUU99D111qqqGrstVpppp1881AA1Y2YBBYY152.....',
-        '......251YE1YEYY1NUU9D11qqqqGGGrstVppp1D8U111YYBY1BY1552....',
-        '.....2551E11EEYY1NU9D11VqqqqGG1rstPPVpp1D8UN1YYBB11B1552....',
-        '.....25551..1EYE1N9D1.1VPqqGG1.rstVPPGp11D8N1BYB12.12552....',
-        '....25555C..1EE11ND1...1VqVG1..rt1VVPG11.1DN11BB12...2552...',
-        '....25522...211C.11.....11Xv1...r1111Xv1..11..11552...252...',
-        '...2522....255C.........1Xv1........1Xvv1......C552....222..',
-        '...22......25C.........1Xvv1........1Xvv1.......CC2......2..',
-        '..2........2C..........1uv1.........1uuv1.........C2........',
-        '...........C..........1uuv1..........1uv1..........C........',
-        '.....................1AMv1...........1MAv1..................',
-        '.....................1Av1.............1AAv1.................',
-        '......................11...............111..................',
+        '...............................1............................',
+        '...............................2............................',
+        '............................3314133.........................',
+        '..........................33512421133.......................',
+        '........................3366..12166663......................',
+        '.......................3766.55515..773......................',
+        '....................3...3888555577733.......................',
+        '.......9............A3....33887733.....................3....',
+        '.......99..........3B3................................33....',
+        '.......943.........343.........CC....................393....',
+        '.......3943........A43......CCCDDCCC................3493....',
+        '.......39443......34B3.....CDDEEEDDFC..............9499.....',
+        '.....3.39G4493....34B3....CDEEEEEEDDFC...........3444G333...',
+        '.....H3339G44433..A4I3...CDEEEDDEEEEDFC........39444G33H3...',
+        '.....3BJHJ9GG444334BI...CFDEEDEEDDEEKFC......33444GG3JBH....',
+        '.....3H4JHJGGG44434I3...CFDEDDDEDKKFKFC...3334444GGJHBH3....',
+        '......3B4BHJGGGG3BBI3...CFDFDDDKKKFKKFC.33J4444GGGJHBBH3....',
+        '.......HB44BHJGH3BBI393.CFDEDDKCCKKCCC3399444GGGJHBLLH3.....',
+        '......33HB444BHH3BBI3HJ3CFDEDDKKMNKKMCJ9943GGGGJHBLH333.....',
+        '......3H3OOBBBBB3BIA3BHJCFDEDFKPKKKKQCBBB363HBBBLLH33H3.....',
+        '.......39JJOOOO3BBL3B333CFDDFFKKKKKQC9BB37763BBLHJJH93......',
+        '.......3H993HHH3BIA33J99CFDDFCCFQQQCJJ337656633333O9H3......',
+        '........3HO31393B739334HBCFDDFCCCCCC333755R55666163J3.......',
+        '.........33H2133333773BHH3CFDFC557537775STBRR5555113........',
+        '..........393222IG7132JJJ33CFFC77335SSSTTRBRSRR9S513........',
+        '..........3JJ3115511377771J3CCC533B5TTTTTBBRSSSSS513........',
+        '........33U33JI333333999H9J3B333H3B5TTTTRB46RSSSR513........',
+        '.......3UU44BG3VVV3J3B33333999BLL3B5TTTT6B46RSSSR5133.......',
+        '......3UU4BGGU3WWX3HBHHH3HLL9LLJJ36BRRRRB4827777R56393......',
+        '......3UBBGUUO33X13HHHJ37RJJL11HX3XBTBBBB6Y776RRR63JJ9......',
+        '.....3UBBGUUOO1533RJJJ35U7771RXXHH365RRRYYY76RZZR633333.....',
+        '....3UBHGUUOO575L93333H3UHHUUUHHXX365SISRYY6ZZZZ563J3.33....',
+        '....3HUUUUOO995L9LHHHHU3X662661X5U3665SIR6Y6ZZZR63LL3.......',
+        '...3333UUB999UL9LHHHH3RSS3SZZZZSSSS366SISRYRZZR56333L3......',
+        '.....3UUI99IUL9LHH3UU3STS3SZTZZRRZR3665SIR6ZZR5Y3J3.33......',
+        '.....3UIIIUUL9LUHH333RST37SZTZZ8RZRR3665RI6ZR5Y3JH3...3.....',
+        '....33IIIUULLUUHH33.3STS373ZTZ27RRZRR36655RR5Y3333J3........',
+        '....3..3UUL33UHU33..3ST3417ZT6262RZ63X366666Y333..33........',
+        '.......33L.3UH33...3STS3197Z782267ZR6BB3X6YY3..3...3........',
+        '.......3...333....3SSTS3197ZTZ786RZR6HHX33633...............',
+        '...........3......3TTSS37197ZTZ6RZRR6HHX3T3R3...............',
+        '.................3TS6663U777ZTZZRZR63666377R3...............',
+        '................3S66RRR3UU37T2ZSZR26a9aa33R3................',
+        '................3333333UB4B3U33SR6S3aa9a3.33................',
+        '......................3U4BHU333R333.3aa9a3..................',
+        '....................33U4BBHU3..33...3a79a5333...............',
+        '..................33XXX7BH7U3........3a777BBH3..............',
+        '.................3UBBBaX22X3.........3aaHHHH53..............',
+        '................33XXXXBBXXX3..........3333333...............',
+        '..................33333333..................................',
         '............................................................',
       ],
     },
@@ -11707,59 +11820,59 @@ Seimyaku.alternateForms = {
       ],
     },
     834: { // 宵月魔后イリュゼ
-      palette: [null, '#191622', '#302337', '#c1acbd', '#80553f', '#92819c', '#d1995e', '#3a3346', '#705a82', '#c1a4ce', '#ffe4a0', '#ebc675', '#fff2c1', '#8c739d', '#776782', '#ccc2e4', '#9083ae', '#f6e5ff', '#976e4d', '#ffe4cd', '#fff7e9', '#c84657', '#d29a9c', '#efaba5', '#624c76', '#f2e4ee', '#55455f', '#aa91bd', '#cc81bc', '#c5a3b1', '#76627b', '#f6e3cd', '#352c43', '#985194', '#e0c3df', '#ad90b5', '#80648f', '#ffdd96', '#c68a58', '#bd8966', '#b98659', '#efca83', '#bc91b8', '#704e72', '#fae2cf', '#5e4c6b', '#7b648a', '#4e405b', '#57445f', '#776186', '#a48caf', '#65516e'],
+      palette: [null, '#201526', '#89516d', '#322237', '#e5dbec', '#69405c', '#352638', '#b49ab2', '#705166', '#483047', '#ffe3a7', '#f2c183', '#bda0b9', '#423449', '#987c9a', '#ffc1c5', '#a33157', '#9b6851', '#d69669', '#a283a0', '#755a7c', '#d2939d', '#c5a7bb', '#aa87a7', '#ab6e88', '#57405e', '#b78699', '#e85a75', '#806786', '#aa91b2', '#d0b7d0', '#ac91ab', '#ffe0c5', '#8c708d', '#511d40', '#c98b96', '#ba9bab', '#e9bbae', '#583e58', '#886783', '#65465f', '#694963', '#b99bb2', '#b598ac', '#8b6a86', '#6e4a64', '#956f8e', '#a56881', '#c3859b', '#6b465f', '#8c566f', '#ba8399', '#775165', '#9b7183', '#794d63', '#b67e89', '#9083ae', '#ccc2e4', '#f6e5ff', '#fff7e9', '#c84657', '#efaba5'],
       rows: [
         '............................................................',
-        '............................................................',
-        '............................................................',
-        '............................................................',
-        '............................................................',
-        '.......1...................................2................',
-        '......131.................................242...............',
-        '.....1551.................................262...............',
-        '....15781................................24642111...........',
-        '....17Y81...............................246A642bb1..........',
-        '....17Y981...............................24642CC1...........',
-        '....17Y9981...............1..............1262CC1............',
-        '....17Y9ZZ81.............1E1.....1.1....1B242C1.............',
-        '....17Y9ZDD81...........17E1.1111F111...1bC2C1..............',
-        '...17YY9ZaDD81.........17EE11FFFFFFG111.1bCCb1...........1..',
-        '...17Y99Za8DD81....1..17EE71FHHHHHHFG1711bCCc1..........131.',
-        '...17Y9ZZD8DDD81..1C117EE771HHHHHHHFFG171dCBc1...1....11551.',
-        '..17YY9ZD8DDDDD81.1C17EEE771HFFHHHFHJG1E1IBBB1..1C111185571.',
-        '..17Y9ZZ8DDDaaDD81CB17EE7771FFFFHJJGJG1E1IdBBB11Cb1885Y971..',
-        '..17Y9ZD8DDaa88D1CCBC17E7771FFFFFJGJJG1711IdBBBbb15599Y971..',
-        '..17YZZ8DDaD88DDD1CBC1177771GFFJJJJ11171..1IdccB1YYYY9971...',
-        '..17DZD8DaD8DDDDDD1C1..1111HFFJ11KJJL11111846II1YY9999971...',
-        '..17aD8DaD8DaaDnno7171..1GFHFFJJLJJJM11885D4611DDZZ999971...',
-        '..17D8DDa8Da788nnnnoo11.1GFHFGJNJJJM18885DD46D8aDDDDZ9971...',
-        '..17711DD8D7811nnnnnn1o11GFHGGJJJMM1178DD8D46DD88aDDD99971..',
-        '..171.1D77711.1pppnnnnno1GFFG11GM11.17DD1D846DDDD88aDD99971.',
-        '...1..17711...11m551pn1n1GFFG1M11O111171J11J18DDDDD88DD9971.',
-        '......171......1791J11J11GFFG1PQQR11O111JMJJ1D877DDDD8aDZ71.',
-        '.......1......17991JJMJ11GFFG1SRR1TT11111MJ11D1187DD1118D71.',
-        '.............1799511JM1111GFG11R1UTV1QQ11MO11171177D1..1771.',
-        '............17YY59Y1OM11QW1G1U1Q1UT11QWQW11171Y71171....171.',
-        '...........17YY59Y9911WQWW1111Q1S11111QWW19461Y9711......1..',
-        '...........17Y59Y998D1QWW1WQQQ1SiX1OW1QW119ef95971..........',
-        '..........17YY5YZZ8DD1QW11OROXg1X11OWW11R184695Y971.........',
-        '..........17Y59DZ8DDD71111QQSXRQ1WW1WWQQR1D46D95971.........',
-        '.........17YY5YZD8DD777171QQgRQQQWWW1WWQQR146D95Y971........',
-        '.........17Y59DZ8D77711771QghRQQQhWW1WWQQg146DD95971........',
-        '........17YY5YZ7771111111QQghWWgQhWWW1WWQQR467D95Y971.......',
-        '........17Y59D7711.....1QRghWWWRQQWWW1WWQQgef77D95971.......',
-        '........1751D771......1QQghWWWQQRQQWW1OWQQg46177D1571.......',
-        '........171.171......1QQghhWW11QQRghhW1OWQg46.171.171.......',
-        '.........1...1.......1QgghWW1.11QQRRWW11OWg46..1...1........',
-        '....................111QRQW1...11QQRW1..1OR46...............',
-        '....................1QRQQW1.....1QRQW1...11.................',
-        '...................1QQWW1........1QQWW1.....................',
-        '...................1QQWW1........1RQQW1.....................',
-        '....................1WQQW1........1QQW1.....................',
-        '.....................11111........1QWW1.....................',
-        '...................................1RQW1....................',
-        '...................................1QQWW1...................',
-        '....................................1111....................',
+        '......................1111..................................',
+        '....1...............11222311................................',
+        '....14.............1225552251...............11..............',
+        '....667...........11..1552251......1......11B1..............',
+        '....1667...............1352531.....111...1AB1...............',
+        '.....18676.............13529331....171..1AB1................',
+        '.....1CD676............155259331...1E1..1BI1..FG........11..',
+        '.....1C8E676...........155559531..1DE1..1ABI1.G...111.11D1..',
+        '.....1EC8E676..........HBI555993H1DE1...1ABBI1....1B11DE1...',
+        '.....EECJKE676........1BHHIGLIIH1DDE111131ABBBIH11BI1EE66...',
+        '....1EEC8JME676......11B11BHHHH31DE1333231IABBBIIBI1E66E....',
+        '....1NEC8J1ME676....1322HBO2211111D122211.1IBBBBBIH166C1....',
+        '...1PNEC8K1DME676..12QQQQ11111333212221...1HIIIBIH18KEC1....',
+        '...1PNEE81R1DME6712OQ11uvvvvvw1111111......1HBII1668KCE1....',
+        '...1ENEE81R1DME822O..1uuvvvvvvWuWWu1......1B1H1VXKK8ECED1...',
+        '...1ENE81YRY11M1176..1uuvuvvWWWW111.....111IB1VXKK8KEECD1...',
+        '...1ENE81YFR1EMEa676.1uuwvvW11xWWy11..11DE11H16XKK8DEECE1...',
+        '..1PNE8EP11111NEEa66.1uvwvvWWyWWWL1S11DEE6111KXccc8EEddED1..',
+        '..1PNEeeP11D11EEEa6661uvwvuWzWWWL1TS1DE6VVI11XKKKKcEEEEdE1..',
+        '..1PEeEEKKW1Eb1Ef8a661uvwuuWWWLL1UTSS166P1I1PPPKKK8EDDDEED1.',
+        '..1Pe8EPKK1W1111EffD1uuvvu11uL11111TS16PP1H1DDDDKK811111DE1.',
+        '..1e8EPPKKD1WWW118DD1vuvvu1L11Zb1921SS11P111D11DDK81....11D1',
+        '..1P8PP11KDPE111I1111v1uvvuu1ZZB1922TTI91WW11..11DK.......11',
+        '...8P11.1KDPE119I91Dv1uvvvu1ZZZI1222119IWZb1.....11.........',
+        '...81....1KPE1.1955551uuu1HB555I1922299I1111......1.........',
+        '...11....1PP1.11925551111955HHI911222999I11E1...............',
+        '...1......1P11D71922211D11555511119299911H1E1...............',
+        '...........11DD7E1991DD1H155R5I35111911E1H1gE1..............',
+        '............1D7Eh811DDD11HHBHI1551PP1PPP1H1Dg1..............',
+        '...........1D7EhK8iDDD1.11IH1155511PPPjPH1kEgE1.............',
+        '...........1DEhK8iDDDD1112B1l555511PPPP1H1kPEgE1............',
+        '..........1DEKhDiDDDD1.122Hmln55551PPPP1I1EkPEDE1...........',
+        '.........1DEKhD8DDDDD1.122m5lnO2551PPPP1H1EPkkDEE...........',
+        '........1DEKDDD8DDDD1.1122m1lnO2251111P1H1PPP1PDPE..........',
+        '.......1DDKDDDD1DD1D1.112m5l3n5O251...11H11PP111PP1.........',
+        '.......1D11DD111D1.1..12m5Il3nop2251..1H11.111..1111........',
+        '......111..11..11.....125Il33nopO2231.1H1....1..............',
+        '......1........1.....112Ilq3n3o5p2l21.1B1...................',
+        '.....................12I3lq3n3o3pO2l511I1...................',
+        '....................12333rq3n3o35p22l51I1...................',
+        '....................11311rq3n3o33pO22lHI1...................',
+        '.................15555191r33n33o99pH21HI511....11...........',
+        '...............119HHH911.1r3233so99pp1I1255111131...........',
+        '..............11199911...11r2r31s9I9t1I122555551............',
+        '.................111.......1231H1ssII1I1II222311............',
+        '...........................1211...1ssH11ttBHHH..............',
+        '...........................19H91....1H1ss9999911............',
+        '............................19HH1...1B11111111..............',
+        '............................19III11.111.....................',
+        '.............................11111..........................',
         '............................................................',
       ],
     },
@@ -19320,7 +19433,11 @@ Object.assign(Seimyaku.lateRankSprites, {
   const header = (title, sub = '', actions = '') => `<div class="page-head"><div><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>${actions}</div>`;
   const smartFilter = (text, search) => text.toLocaleLowerCase('ja').normalize('NFKC').includes(search.trim().toLocaleLowerCase('ja').normalize('NFKC'));
   const statGrid = stats => `<dl class="stat-grid">${STATS.map((label, i) => `<div><dt>${label}</dt><dd>${fmt(stats[i])}</dd></div>`).join('')}</dl>`;
-  const traitsList = traits => `<ul class="trait-list">${traits.map(id => `<li><b>${TRAITS[id].name}${TRAITS[id].size ? ' <small>サイズ特性</small>' : ''}</b><span>${TRAITS[id].desc}</span></li>`).join('')}</ul>`;
+  const traitsList = traits => `<ul class="trait-list">${traits.map(id => {
+    const trait = TRAITS[id];
+    const badge = trait.owner ? '固有特性' : trait.size ? 'サイズ特性' : '';
+    return `<li><b>${trait.name}${badge ? ' <small>' + badge + '</small>' : ''}</b><span>${trait.desc}</span></li>`;
+  }).join('')}</ul>`;
 
   function pages(which, page, last) {
     if (last <= 1) return '';
@@ -19956,7 +20073,7 @@ Object.assign(Seimyaku.lateRankSprites, {
   'use strict';
 
   const { RANKS, STATS, SIZES, SPECIES, ARENA, ITEMS, WEAPONS, AILMENTS, SKILLS, TRAITS, ELEMENTS, DIFFICULTIES, EVENTS, DEX_REWARDS, DUNGEONS, STAR_CAVE,
-    STARTERS, TACTICS, ACTIONS, RECIPES, battleStats, totalPower, traitsOf, slotsUsed, levelCap, monsterLevelCap, xpRequired, expansionCost, offspringOf, breedingPlan, alive, formatScoutRate, BATTLE_ITEM_LIMIT, monsterName } = Seimyaku;
+    STARTERS, TACTICS, ACTIONS, RECIPES, battleStats, totalPower, traitsOf, canInheritTrait, slotsUsed, levelCap, monsterLevelCap, xpRequired, expansionCost, offspringOf, breedingPlan, alive, formatScoutRate, BATTLE_ITEM_LIMIT, monsterName } = Seimyaku;
   const { esc, fmt, no, btn, navBtn, itemSymbol, image, back, rankTag, elementTag, none, header,
     smartFilter, statGrid, traitsList, pages, miniMon, meter, techniqueLabel, tutorial } = Seimyaku.uiFormat;
 
@@ -20081,7 +20198,7 @@ Object.assign(Seimyaku.lateRankSprites, {
   }
 
   function breedItems(game, view, first, second, def) {
-    const traits = [...new Set([...traitsOf(first), ...traitsOf(second)])].filter(id => !TRAITS[id].size && !def.traits.includes(id));
+    const traits = [...new Set([...traitsOf(first), ...traitsOf(second)])].filter(id => canInheritTrait(id) && !def.traits.includes(id));
     const mirrors = game.state.bag.mirror ?? 0;
     const orbs = game.state.bag.kinOrb ?? 0;
     const canSwap = mirrors > 0 && traits.length > 0;
